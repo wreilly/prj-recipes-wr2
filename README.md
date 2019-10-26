@@ -1,6 +1,14 @@
-# MyFirstApp
+# prj-recipes-wr2
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 6.0.0.
+Udemy Angular Complete Course with Maximilian Schwarzmüller
+(Currently Angular 8, 2019+ edition)
+
+https://www.udemy.com/course/the-complete-guide-to-angular-2/
+
+wreilly2001@gmail.com
+October 26, 2019
+
+(Originally) This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 6.0.0.
 
 ## Development server
 
