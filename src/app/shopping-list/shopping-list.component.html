@@ -3,13 +3,34 @@
     <app-shopping-edit></app-shopping-edit>
     <hr>
     <ul class="list-group">
-      <a
-        class="list-group-item"
-        style="cursor: pointer"
-        *ngFor="let ingredient of ingredients"
+        <li>
+<!-- ORIG: -->
+      <li
+              class="list-group-item"
+              style="cursor: pointer"
+              *ngFor="let ingredientwr of ingredients"
+
       >
-        {{ ingredient.name }} ({{ ingredient.amount }})
-      </a>
+        <p>hmm ingredientwr: ??{{ ingredientwr.name }} ({{ ingredientwr.amount }})??</p>
+        <p>hmm ingredientwrOLDSKOOL: ??{{ ingredientwr['ingredient-nameName'] }} ({{ ingredientwr['amountName'] }})??</p>
+<!-- on-click="populateFormWithIngredient(myIndex)" -->
+      <ng-template
+              ngFor
+              let-ingredient
+              [ngForOf]="ingredients"
+              let-myIndex="index">
+        <a
+                class="list-group-item"
+                style="cursor: pointer"
+                on-click="populateFormWithIngredient(myIndex)"
+        >
+          {{ myIndex }}: {{ ingredient.name }} ({{ ingredient.amount }})
+        </a>
+      </ng-template>
+        <!--
+        https://angular.io/api/common/NgForOf#description
+        -->
+      </li>
     </ul>
   </div>
 </div>
