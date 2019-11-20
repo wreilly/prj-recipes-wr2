@@ -114,8 +114,27 @@ bind-value="myTestKitchenIngredient.name"
             class="form-control"
             ngModel
             required
-            pattern="^[1-9][0-9]*$"
+            [pattern]="'^[1-9][0-9]*$'"
             #amountInput>
+          <!-- re: pattern
+          Should all work:
+          pattern="^[1-9][0-9]*$"
+          [pattern]="^[1-9][0-9]*$"
+          [pattern]="'^[1-9][0-9]*$'"
+
+          The RegEx at bottom is a string, goes between single quotation marks (within the double quotation marks)
+          We can omit those single quotation marks (I'm told).
+          Also, when you bind a string onto a (what? property?), e.g., '[]=', you can omit the
+          square brackets on the left (I'm told)
+          Huh.
+
+          As to that '[]=' biz, note counter example:
+          name="amountName"  << YES
+          [name]="amountName" << NO Cannot do
+          Angular needs that 'name' property to be 'name',
+          not '[name]'
+          -->
+
           <!-- No Longer Doing:
             bind-ngModel="myTestKitchenIngredient.amount"
             on-ngModelChange="myTestKitchenIngredient.amount = $event"
@@ -167,7 +186,8 @@ same as Instructor: pattern="^[1-9][0-9]*$"
           <button class="btn btn-success"
                   type="submit"
           bind-disabled="!myFormRef.valid"
-          >WAS: Submit NOW IS": {{editMode ? 'Update/Edit' : 'Add New' }}</button>
+          >
+            WAS: Submit NOW IS: {{editMode ? 'Update/Edit' : 'Add New' }}</button>
 <!-- Apparently (above) when you have on-ngSubmit on the <form> (as I now do), you no longer need an explicit
 on-click down here on the button of
 type="submit". MBU.
@@ -179,7 +199,9 @@ type="submit". MBU.
           <button class="btn btn-success" type="button" (click)="onAddItem()">Add</button>
 -->
 
-          <button class="btn btn-danger" type="button" on-click="onDeleteItem()">Delete</button>
+          <button class="btn btn-danger" type="button"
+                  *ngIf="editMode"
+                  on-click="onDeleteItem()">Delete</button>
           <button class="btn btn-primary" type="button" on-click="myClearForm()">Clear</button>
         </div>
       </div>

@@ -35,7 +35,8 @@
     {{ recipe.description }}
   </div>
 </div>
-<div class="row">
+<div class="row"
+*ngIf="recipe.ingredients">
   <div class="col-xs-12">
     <ul class="list-group">
       <li

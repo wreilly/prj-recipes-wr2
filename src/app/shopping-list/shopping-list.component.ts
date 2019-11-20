@@ -21,14 +21,26 @@ export class ShoppingListComponent implements OnInit, OnDestroy {
   constructor(private slService: ShoppingListService) { }
 
   ngOnInit() {
+    console.log('HEY !!! 01 ngOnInit() is running on ShoppingListComponent. this.ingredients is BEFORE ', this.ingredients);
     this.ingredients = this.slService.getIngredients();
+    console.log('HEY !!! 02 ngOnInit() is running on ShoppingListComponent. this.ingredients is AFTER ', this.ingredients);
 /* RXJS SUBJECT NOW
+WAS:
     this.slService.ingredientsChanged
+*/
+
+/* NAH NOPE NO
+EXPERIMENT 02 plain old Observable ( ? )
+
+    this.slService.myIngredientsChangedObservable.subscribe((whatWeGot) => {
+      console.log('whatWeGot plain old Observable ? ', whatWeGot); // NOT HEARD FROM
+    })
 */
     this.myIngredientsChangedSubscription = this.slService.myIngredientsChangedSubject
       .subscribe(
         (ingredients: Ingredient[]) => {
-          console.log('ingredients are now ', ingredients);
+          // tslint:disable-next-line:max-line-length
+          console.log('ING WR__ DO WE GET HERE **YES** - Both Add New & Update Existing. ? ingredients are now ', ingredients);
           this.ingredients = ingredients;
         }
       );

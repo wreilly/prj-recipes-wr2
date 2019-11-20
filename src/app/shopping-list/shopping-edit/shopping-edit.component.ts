@@ -15,7 +15,7 @@ import {Subscription} from 'rxjs'; // not Form anymore ( ? )
   selector: 'app-shopping-edit',
   templateUrl: './shopping-edit.component.html',
   styleUrls: ['./shopping-edit.component.css']
-})
+}) // N.B. No service provider here above! https://itnext.io/understanding-provider-scope-in-angular-4c2589de5bc
 export class ShoppingEditComponent implements OnInit, OnDestroy {
 
   myTestKitchenIngredient = new Ingredient('ketchup', 5);
@@ -24,8 +24,11 @@ export class ShoppingEditComponent implements OnInit, OnDestroy {
   myIngredientSelectedToEditIndex: number;
   myIngredientSelectedToEdit: Ingredient;
 
+/* Nope. We need the index, not the ingredient.
   myIngredientSelectedToEditSubscription: Subscription;
+*/
   myIngredientSelectedToEditIndexSubscription: Subscription;
+  myIngredientsChangedSubjectSubscription: Subscription;
 
 
 /* NO, the FORM should not be declared here as a directly stated class member. No.
@@ -33,10 +36,29 @@ export class ShoppingEditComponent implements OnInit, OnDestroy {
   myForm: NgForm; // << no
 */
 /* Veddy Interesting. This works to "get" the TD form,
+
+UPDATE:
+Hmm, really? Are you sure we are "not using" ???
+Okay, scoop is:
+- We DO USE and need this @ViewChild, to get
+reference to the HTML Form 'myForm' which we use in lots of places (reset form etc)
+- We also CAN USE the passed-in ngForm ref on "onSubmit()"
+SO, FINDING:
+- Quite interesting. I believe both work: << YER WRONG
+-- 1. Use @ViewChild() to "go get" the form reference // << YEP
+-- 2. or Use onSubmit() to *pass in* the form reference // << NOPE, solly
+FURTHER:
+Nope! I'm wrong. The "onSubmit()" was is TOO LATE.
+You don't get Form Reference till user has clicked
+Whereas the @ViewChild() way of course gets it upon init.
+Okay, I Stand Corrected. Bueno.
+
+HAD SAID EARLIER:
   BUT, we are NOT USING this. We instead
   PASS the form ref in on submit(). Cheers
   */
-  @ViewChild('myFormRef', { static: false}) myForm: NgForm;
+  @ViewChild('myFormRef', { static: false}) myForm: NgForm; // << YES WORKS USE THIS
+  // myForm; // we'll get it off onSubmit() // << NO. "TOO LATE" <<  Wrong: YES WORKS
 
   @ViewChild('ingredientNameInput', { static: false }) ingredientNameInputRef: ElementRef;
   @ViewChild('amountInput', { static: false }) amountInputRef: ElementRef;
@@ -46,13 +68,18 @@ export class ShoppingEditComponent implements OnInit, OnDestroy {
   constructor(private slService: ShoppingListService) { }
 
   ngOnInit() {
+
+/* ************************
+These 2 steps are NOT NEEDED here in EDIT component. (Sheesh.)
+
     // Step 1. Sign up for updates to array of Ingredients?
-    this.slService.myIngredientsChangedSubject.subscribe((whatWeGot) => {
+    this.myIngredientsChangedSubjectSubscription =  this.slService.myIngredientsChangedSubject.subscribe((whatWeGot) => {
       console.log('whatWeGot Ingredient[] n\'est-ce pas? ', whatWeGot);
     });
     // Step 2. Load up default couple records?  y not
     this.myTestKitchenIngredientsFromService = this.slService.getIngredients();
-
+******************************
+*/
     // 3. Another task: subscribe to the INDEX for the Ingredient to Edit
     this.myIngredientSelectedToEditIndexSubscription =  this.slService.myIngredientToEditIndex.subscribe((ingredientIndexWeGot: number) => {
       console.log('myIngredientToEditIndex change! ingredientIndexWeGot ', ingredientIndexWeGot);
@@ -69,7 +96,7 @@ export class ShoppingEditComponent implements OnInit, OnDestroy {
     this.myForm.setValue({
       'ingredient-nameName': ingredientToNowEdit.name,
       // Huh. nope.  Error: Must supply a value for form control with name: 'ingredient-nameName'.
-      amountName: ingredientToNowEdit.amount
+      'amountName': ingredientToNowEdit.amount
     });
   }
 
@@ -84,6 +111,12 @@ export class ShoppingEditComponent implements OnInit, OnDestroy {
 
   myOnSubmit(formPassedIn: NgForm) {
     const formValue = formPassedIn.form.value;
+
+    /*
+    TEST
+     */
+    this.myForm = formPassedIn;
+
     console.log('01 SUBMIT formValue is it zero or what? ', formValue); // Our story thus far: {} hmmph
     /*
   {  amountName: 4
@@ -179,8 +212,11 @@ ingredient-nameName: "ketchup" }
 
   onDeleteItem() {
     const indexToDelete: number = this.myIngredientSelectedToEditIndex;
+    this.myClearForm();
+/* Just call clear method! :o)
     this.myForm.resetForm();
     this.editMode = false;
+*/
 
     this.slService.deleteIngredient(indexToDelete);
   }
@@ -219,7 +255,10 @@ ingredient-nameName: "ketchup" }
   }
 
   ngOnDestroy(): void {
-    this.myIngredientSelectedToEditSubscription.unsubscribe();
+    this.myIngredientSelectedToEditIndexSubscription.unsubscribe();
+/* I No Longer Use This here:
+    this.myIngredientsChangedSubjectSubscription.unsubscribe();
+*/
   }
 
 }

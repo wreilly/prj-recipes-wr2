@@ -1,6 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms'; // Template-driven e.g. shopping list edit
+import { ReactiveFormsModule } from '@angular/forms'; // Reactive (model-driven) e.g. recipe edit
 
 
 import { AppComponent } from './app.component';
@@ -16,6 +17,7 @@ import { ShoppingListService } from './shopping-list/shopping-list.service';
 import { AppRoutingModule } from './app-routing.module';
 import { RecipeStartComponent } from './recipes/recipe-start/recipe-start.component';
 import { RecipeEditComponent } from './recipes/recipe-edit/recipe-edit.component';
+import {RecipeService} from './recipes/recipe.service';
 
 @NgModule({
   declarations: [
@@ -34,9 +36,11 @@ import { RecipeEditComponent } from './recipes/recipe-edit/recipe-edit.component
   imports: [
     BrowserModule,
     FormsModule,
+    ReactiveFormsModule,
     AppRoutingModule
   ],
-  providers: [ShoppingListService],
+  providers: [ShoppingListService, RecipeService],
+  // WR__ test editing added RecipeService. yes, needs to be here at root, not up/over in a Shopping component... https://itnext.io/understanding-provider-scope-in-angular-4c2589de5bc
   bootstrap: [AppComponent]
 })
 export class AppModule { }

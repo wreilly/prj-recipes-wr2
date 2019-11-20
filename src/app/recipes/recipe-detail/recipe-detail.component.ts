@@ -7,7 +7,14 @@ import { RecipeService } from '../recipe.service';
 @Component({
   selector: 'app-recipe-detail',
   templateUrl: './recipe-detail.component.html',
-  styleUrls: ['./recipe-detail.component.css']
+  styleUrls: ['./recipe-detail.component.css'],
+  providers: [RecipeService],
+  /* O la. Error without above.
+  See also 1) RecipesComponent *used to* have (no longer) this entry
+  2) RecipeListComponent *does have* this entry
+  P.S. You'd think I could just put it on AppModule, but maybe that's overkill etc.
+  P.P.S. Prob we are headed to refactoring to a RecipeModule ... T.B.D.
+   */
 })
 export class RecipeDetailComponent implements OnInit {
   recipe: Recipe;
