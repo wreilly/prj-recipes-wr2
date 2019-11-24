@@ -72,6 +72,19 @@ the Subscribing etc.
 
   }
 
+  myClearShoppingList(): void {
+
+    if (this.ingredients.length > 0) {
+/* Hah! No!
+Not simply clear the local array of Ingredients here on the Component. No.
+      this.ingredients = []; // just clear it ?
+*/
+
+      this.slService.deleteAllIngredients(); // that's it!
+
+    }
+  }
+
   ngOnDestroy(): void {
     this.myIngredientsChangedSubscription.unsubscribe();
     // this.myIngredientSelectedToEditSubscription.unsubscribe();

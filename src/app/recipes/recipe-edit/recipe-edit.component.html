@@ -5,8 +5,8 @@
         <button
                 type="submit"
                 class="btn btn-success"
-                [disabled]="!myRecipeForm.valid">Save</button>
-<!-- TODO: Not Current Concern      <button type="button" class="btn btn-danger" (click)="onCancel()">Cancel</button>-->
+                [disabled]="!myRecipeForm.valid">{{editMode ? 'Update' : 'Save' }}</button>
+          <button type="button" class="btn btn-danger" (click)="myOnCancel()">Cancel</button>
       </div>
     </div>
     <div class="row">
@@ -57,18 +57,53 @@
     </div>
     <div class="row">
       <div class="col-xs-12" formArrayName="ingredients">
+<!-- This works. More normal (than my exploratory TESTING below).
+     Here, not trying to make use of "ngForOf"
+     N.B. 'ingredientControls' is a GETTER()
+     -->
         <div
                 class="row"
                 *ngFor="let ingredientCtrl of ingredientControls; let myI = index"
                 [formGroupName]="myI"
                 style="margin-top: 10px;">
-<!--
-        <div
-                class="row"
-                *ngFor="let ingredientCtrl of ingredientControls; let myI = index"
-                [formGroupName]="myI"
-                style="margin-top: 10px;">
--->
+
+
+<!-- TESTING alternative syntax for ngForOf y not
+Interesting. Okay, so the ng-template needs to WRAP more
+the whole div.row holding all these ingredient controls.
+Must be the outermost as 'twere. Okay.
+    NOPE: Not up here, outside the  ng-template
+       <div         class="row">
+
+Instead, put that div.row down below the ng-template,
+such that the "myI" created by the ngForOf, on that ng-template,
+is then available for use/reference down below in the div.row,
+for each FormGroup. And then (like before) the HTML nested
+FormControls for each name and amount are seen in nested divs and
+input elements.
+Methinks.
+                -->
+<!--                <ng-template
+                        [ngForOf]="ingredientControls"
+                        let-ingredientCtrl
+                        let-myI="index"
+                        ngFor
+                        >
+                    <div class="row" [formGroupName]="myI"
+                         style="margin-top: 10px;">
+                        <p>test whoa</p>
+                        <div class="col-xs-8">
+                            <input
+                                    type="text"
+                                    class="form-control"
+                                    formControlName="name">
+                        </div>
+                    </div>-->
+                    <!-- Note we're INCOMPLETE with this little test
+                    ng-template would not end here, but should instead be placed at bottom of
+                    all this "list of ingredients (controls)" biz. -->
+<!--                </ng-template>-->
+
 <!--  OLD. NOW WRONG.        *ngFor="let ingredientCtrl of recipeForm.get('ingredients').controls; let i = index" -->
           <div class="col-xs-8">
             <input
@@ -86,7 +121,7 @@
             <button
                     type="button"
                     class="btn btn-danger"
-                    (click)="onDeleteIngredient(myI)">X</button>
+                    (click)="myOnDeleteIngredient(myI)">X</button>
           </div>
         </div>
         <hr>
@@ -95,10 +130,19 @@
             <button
                     type="button"
                     class="btn btn-success"
-                    (click)="onAddIngredient()">Add Ingredient</button>
+                    (click)="myOnAddIngredient()">Give Me a Little Form, With Which I Will Add an Ingredient</button>
+              <span> &nbsp; &nbsp; </span>
+
+            <button type="button"
+                    class="btn btn-danger"
+                    bind-disabled="ingredientControls.length === 0"
+                    on-click="myClearAllRecipeIngredients()">
+                Clear ALL Ingredients
+            </button>
           </div>
         </div>
       </div>
+        <!--    </div> for ngForOf Testing above -->
     </div>
   </form>
 </div>

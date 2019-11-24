@@ -2,33 +2,52 @@
   <div class="col-xs-10">
     <app-shopping-edit></app-shopping-edit>
     <hr>
-    <ul class="list-group">
-        <li>
-<!-- ORIG: -->
+      <button
+             bind-disabled="ingredients.length === 0"
+             type="button"
+             class="btn btn-warning"
+             on-click="myClearShoppingList()">Clear Shopping List</button>
+      <ul class="list-group">
+          <li class="list-group-item" style="font-weight: bold">
+              <span>Index: </span> -- <span>Name</span> -- <span>(Quantity)</span>
+          </li>
+          <li style="display: block">
+<!-- Above bit of CSS removes the default "dot" to left of the <li>
+     Thereby matches what "list-group-item" does. Bon. -->
+
+<!-- ORIG: WORKED but not using
       <li
               class="list-group-item"
               style="cursor: pointer"
               *ngFor="let ingredientwr of ingredients"
 
       >
-        <p>hmm ingredientwr: ??{{ ingredientwr.name }} ({{ ingredientwr.amount }})??</p>
-        <p>hmm ingredientwrOLDSKOOL: ??{{ ingredientwr['ingredient-nameName'] }} ({{ ingredientwr['amountName'] }})??</p>
+        <p>hmm ingredientwr: {{ ingredientwr.name }} ({{ ingredientwr.amount }})</p>
+        <p>hmm ingredientwrOLDSKOOL: {{ ingredientwr['ingredient-nameName'] }} ({{ ingredientwr['amountName'] }})</p>
+-->
 <!-- on-click="populateFormWithIngredient(myIndex)" -->
-      <ng-template
-              ngFor
-              let-ingredient
-              [ngForOf]="ingredients"
-              let-myIndex="index">
-        <a
-                class="list-group-item"
-                style="cursor: pointer"
-                on-click="populateFormWithIngredient(myIndex)"
-        >
-          {{ myIndex }}: {{ ingredient.name }} ({{ ingredient.amount }})
-        </a>
-      </ng-template>
+            <ng-template
+                    ngFor
+                    let-ingredient
+                    bind-ngForOf="ingredients"
+                    let-myIndex="index">
+                <div class="list-group-item">
+                    {{ myIndex }}:
+                    <a
+                            style="cursor: pointer"
+                            on-click="populateFormWithIngredient(myIndex)"
+                    >{{ ingredient.name }}</a>
+                    ({{ ingredient.amount }})
+                </div>
+            </ng-template>
         <!--
         https://angular.io/api/common/NgForOf#description
+        Shorthand:
+        <li *ngFor="let item of items; index as i; trackBy: trackByFn">...</li>
+        Expanded:
+        <ng-template ngFor let-item [ngForOf]="items" let-i="index" [ngForTrackBy]="trackByFn">
+  <li>...</li>
+</ng-template>
         -->
       </li>
     </ul>

@@ -100,7 +100,7 @@ These 2 steps are NOT NEEDED here in EDIT component. (Sheesh.)
     });
   }
 
-  get myDiagnostic() {
+  get myDiagnostic(): string { // GETTER
     // https://angular.io/guide/forms#template-driven-forms
     // NO NO return (this.myForm.valueOf() | JSON);
     // console.log('00 ', this.myForm);

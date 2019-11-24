@@ -130,4 +130,10 @@ destination: ...
     this.ingredients.splice(indexPassedIn, 1);
     this.myIngredientsChangedSubject.next(this.ingredients.slice()); // makes new copy...
   }
+
+  deleteAllIngredients() {
+    this.ingredients = []; // just clear it? guess so
+    this.myIngredientsChangedSubject.next(this.ingredients.slice()); // makes new copy...
+  }
+
 }

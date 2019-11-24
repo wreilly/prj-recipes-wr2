@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Params } from '@angular/router';
-import {FormGroup, FormControl, Validators, FormArray} from '@angular/forms';
+import { ActivatedRoute, Router, Params } from '@angular/router';
+import {FormGroup, FormControl, Validators, FormArray, Form, AbstractControl} from '@angular/forms';
 import { RecipeService } from '../recipe.service';
 import {Recipe} from '../recipe.model';
 
@@ -24,6 +24,7 @@ export class RecipeEditComponent implements OnInit {
 
   constructor(
       private route: ActivatedRoute,
+      private router: Router,
       private myRecipeService: RecipeService,
       ) { }
 
@@ -34,6 +35,7 @@ export class RecipeEditComponent implements OnInit {
           console.log('good heavens great scott. are we ever here? params ', params); // yeah. {}  or {id=1}
           this.id = +params['id'];
           this.editMode = params['id'] != null;
+          console.log('editMode is ', this.editMode);
           // ***** NEW IDEA 02 *********************
           this.wrInitForm();
 
@@ -125,8 +127,17 @@ export class RecipeEditComponent implements OnInit {
       };
 */
 
+      if (this.editMode) {
+          // UPDATE EXISTING
+          this.myRecipeService.updateRecipe(this.id, recipeToSendToService);
+          this.editMode = false;
+          this.myOnCancel(); // we are done!
+      } else {
+          // ADD NEW
+          this.myRecipeService.addRecipe(recipeToSendToService);
+          this.myOnCancel(); // we are done!
+      }
 
-      this.myRecipeService.addRecipe(recipeToSendToService); // "is not a function" ( ? )
   } // /myOnSubmit()
 
 
@@ -141,7 +152,9 @@ export class RecipeEditComponent implements OnInit {
     let recipeName = '';
     let recipeImagePath = '';
     let recipeDescription = '';
-    let recipeIngredients = new FormArray([]);
+
+    // Hmm, const vs. let ???
+    const recipeIngredients = new FormArray([]);
     /* Init recipeIngredients with, for first parameter to constructor, an array.
     From the API, that array is labelled 'controls' and is of type AbstractControl[].
     AbstractControl is more than just FormControl, but also
@@ -236,13 +249,112 @@ export class RecipeEditComponent implements OnInit {
 
   } // /wrInitForm()
 
-  get ingredientControls() { // GETTER
+    myOnCancel() {
+        this.myRecipeForm.reset();
+        this.router.navigate(['']);
+    }
+
+    myOnAddIngredient() {
+/* Better, Fuller Name:
+ "Give Me a Little Form, With Which I Will Add an Ingredient"
+        */
+
+// NO:       this.myRecipeService.?? // << We do NOT go to the Service, "add" data etc. No.
+
+        // We instead here *dynamically* (at user button request) add a FormControl (for an Ingredient) to the FormArray. Cheers.
+        (this.myRecipeForm.get('ingredients') as FormArray).push(
+            new FormGroup({
+                name: new FormControl('new add pop', [Validators.required]),
+                amount: new FormControl('666', [Validators.required])
+            })
+        );
+    }
+
+    myOnDeleteIngredient(whichOne: number) {
+      /* Notes:
+      The (sub)-array of Ingredients is "local" as 'twere to the
+      overall Recipe object.
+      Just delete one right here in Component copy/whatever
+      of the current Recipe we are editing/creating.
+      No need to go over to Service for this data management.
+      It is small, local, immediate.
+      The overall resulting Recipe object, after you're done
+      adding or deleting or updating Ingredients, is what will
+      be sent over to the Service to update the system-wide
+      list (array) of Recipes.
+      That is what will (the Service will) then ".next()" the
+      Observable so all Subscriber/Observers will get updated,
+      about the new array of Recipes.
+      But the details about the (sub)-list of Ingredients on any
+      one given Recipe, is not managed in that manner.
+
+      To pretty much restate, repeat:
+      No need for Service, no need for Subject/Observers etc.
+      Just push on and remove from the immediate Ingredients
+      array right here on the current Recipe object you've got
+      right here on the Component.
+       */
+     // Both Work:
+     //    (<FormArray>this.myRecipeForm.controls['ingredients']).removeAt(whichOne);
+        (this.myRecipeForm.controls['ingredients'] as FormArray).removeAt(whichOne);
+    }
+
+  get ingredientControls(): AbstractControl[] { // GETTER
 /* NO. Not simply return ...
       return this.myRecipeForm.get('ingredients');
 */
-// Cast as FormArray, get out and return the controls:
-      return (<FormArray>this.myRecipeForm.get('ingredients')).controls;
+// 01 Cast as FormArray, get out and return the controls:
+//       return (<FormArray>this.myRecipeForm.get('ingredients')).controls; // YES
+// 02 Alternative Way: Cast as FormArray, get out and return the controls:
+      return (this.myRecipeForm.controls['ingredients'] as FormArray).controls; // YES
   }
+
+    myClearAllRecipeIngredients(): void {
+      /*
+      https://www.udemy.com/course/the-complete-guide-to-angular-2/learn/lecture/13992332#content
+       */
+      // Both work:  CLEAR()  :o)
+        // (<FormArray>this.myRecipeForm.controls['ingredients']).clear(); // New with Angular 8. Cheers.
+        // (this.myRecipeForm.controls['ingredients'] as FormArray).clear(); // also.
+
+
+        // TRYING SOME OLDER MODES:
+        // 1. for let i++ ?  <<< NO!!!
+        // // forget about the 'i' counter/index - it is a moving target !!!
+/*
+        const howManyToKill = (this.myRecipeForm.controls['ingredients'] as FormArray).length;
+        for (let i = 0; i <= howManyToKill; i++) {
+            console.log('00', i);
+*/
+/* Hah! This do NOT work. (Back to JavaScript 101)
+            (this.myRecipeForm.get('ingredients') as FormArray).removeAt(i);
+*/
+// Hah! No .pop() on FormArray. Solly!
+/*            (this.myRecipeForm.get('ingredients') as FormArray).pop(); // forget about the 'i' counter/index - it is a moving target !!!
+*/
+/*
+            console.log('01', i);
+        }
+*/
+
+        // 2. for of ? << forget it. we don't *want* the indiviual IngredientControl
+        // for anything -we just want to delete it
+/*
+        for ( thisIngredientControl of  ) {
+
+        }
+*/
+
+
+        // 3. map?  << forget it; enough time spent here ...
+
+        // 4. (DO) WHILE () {} // YES !!!
+        // https://stackoverflow.com/questions/41852183/angular-2-remove-all-items-from-a-formarray
+        while ((<FormArray>this.myRecipeForm.get('ingredients')).length !== 0) {
+            (<FormArray>this.myRecipeForm.get('ingredients')).removeAt(0); // << THAT is the secret sauce. Keep killing POSITION ZERO
+        }
+
+    }
 
 /*
   wrInitFormNOPE() {
