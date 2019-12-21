@@ -2,6 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms'; // Template-driven e.g. shopping list edit
 import { ReactiveFormsModule } from '@angular/forms'; // Reactive (model-driven) e.g. recipe edit
+import { HttpClientModule } from '@angular/common/http';
 
 
 import { AppComponent } from './app.component';
@@ -14,6 +15,9 @@ import { ShoppingListComponent } from './shopping-list/shopping-list.component';
 import { ShoppingEditComponent } from './shopping-list/shopping-edit/shopping-edit.component';
 import { DropdownDirective } from './shared/dropdown.directive';
 import { ShoppingListService } from './shopping-list/shopping-list.service';
+
+// import { DataStorageService } from './shared/data-storage.service';
+
 import { AppRoutingModule } from './app-routing.module';
 import { RecipeStartComponent } from './recipes/recipe-start/recipe-start.component';
 import { RecipeEditComponent } from './recipes/recipe-edit/recipe-edit.component';
@@ -37,10 +41,13 @@ import {RecipeService} from './recipes/recipe.service';
     BrowserModule,
     FormsModule,
     ReactiveFormsModule,
-    AppRoutingModule
+    AppRoutingModule,
+    HttpClientModule,
   ],
-  providers: [ShoppingListService, RecipeService],
-  // WR__ test editing added RecipeService. yes, needs to be here at root, not up/over in a Shopping component... https://itnext.io/understanding-provider-scope-in-angular-4c2589de5bc
+  providers: [ ShoppingListService, RecipeService ],
+  // WR__ test editing added RecipeService.
+  // yes, needs to be here at root, not up/over in a Shopping component...
+  // https://itnext.io/understanding-provider-scope-in-angular-4c2589de5bc
   bootstrap: [AppComponent]
 })
 export class AppModule { }
