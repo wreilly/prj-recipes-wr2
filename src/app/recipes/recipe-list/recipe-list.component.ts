@@ -12,7 +12,9 @@ import { RecipeService } from '../recipe.service';
 //  providers: [RecipeService], // << No not here, in AppModule instead
 })
 export class RecipeListComponent implements OnInit, OnDestroy {
+  myTempRecipesArray: [];
   recipes: Recipe[];
+  myStuff: any[];
   subscription: Subscription;
 
   constructor(private recipeService: RecipeService,
@@ -29,7 +31,15 @@ export class RecipeListComponent implements OnInit, OnDestroy {
           console.log('WR__ in INSTRUCTOR CODE DO WE GET HERE 02 HMM this.recipes ', this.recipes); // YES!
         }
       );
+    // this.myTempRecipesArray = this.recipeService.getRecipes();
+/* Q. Do Not Need so why use? MBU
+   A. Well, on VERY FIRST load no, you're right, recipes[] winds up Empty.
+   And yeah, you gotta click "Fetch Data"
+   BUT, on subsequent revisits to this component (e.g. click on Shopping List, then
+   click back to Recipes), you DO have recipes[] in there. Cheers.
+*/
     this.recipes = this.recipeService.getRecipes();
+    console.log('this.recipes ', this.recipes);
   }
 
   onNewRecipe() {
