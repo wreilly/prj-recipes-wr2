@@ -17,30 +17,33 @@ export class RecipeService {
   // recipesChanged = new Subject<Recipe[]>(); // INSTRUCTOR
   recipesOnServiceChangedSubject = new Subject<Recipe[]>(); // WR__
 
+/* Important: start w empty, app logic will go fetch all off the database = good, what you want */
   private recipes: Recipe[] = [];
 
+
   private recipesORIGPREPOULATEDARRAY: Recipe[] = [ // << NO LONGER USED. Now HTTP GET...
+  // private recipes: Recipe[] = [ // << We are back to using these default 2 recipe records
 
     /* Good Recipes to "new up" for CLASS: */
-  new Recipe(
-  'Class Tasty Schnitzel',
-  'A super-tasty Schnitzel - just awesome!',
-  'https://upload.wikimedia.org/wikipedia/commons/7/72/Schnitzel.JPG',
-  [
-    new Ingredient('Meat', 1),
-    new Ingredient('French Fries', 20)
-  ]
-  ),
+    new Recipe(
+        'Class Tasty Schnitzel',
+        'A super-tasty Schnitzel - just awesome!',
+        'https://upload.wikimedia.org/wikipedia/commons/7/72/Schnitzel.JPG',
+        [
+          new Ingredient('Meat', 1),
+          new Ingredient('French Fries', 20)
+        ]
+    ),
     new Recipe('Class Big Fat Burger',
         'What else you need to say?',
         'https://upload.wikimedia.org/wikipedia/commons/b/be/Burger_King_Angus_Bacon_%26_Cheese_Steak_Burger.jpg',
-  [
-    new Ingredient('Buns', 2),
-    new Ingredient('Meat', 1)
-  ]
+        [
+          new Ingredient('Buns', 2),
+          new Ingredient('Meat', 1)
+        ]
     ),
 
-      // Good Recipes constructed as 'twere for INTERFACE:
+    // Good Recipes constructed as 'twere for INTERFACE:
 /*
     {
       name: 'Interface Tasty Schnitzel',
@@ -52,7 +55,7 @@ export class RecipeService {
       description: 'What else you need to say?',
       imagePath: 'https://upload.wikimedia.org/wikipedia/commons/b/be/Burger_King_Angus_Bacon_%26_Cheese_Steak_Burger.jpg'},
 */
-  ];
+  ]; // /recipes: Recipe[]
 
 
 
@@ -66,7 +69,7 @@ export class RecipeService {
      */
   }
 
-  getRecipes() {
+  getRecipes(): Recipe[] {
     /* UPDATE - Not Really a "GET"!
     Not a "go out and get 'em, fetch"
     No, now it is more like "hand 'em over, immediately, just what you got"
@@ -118,7 +121,7 @@ export class RecipeService {
     this.recipesOnServiceChangedSubject.next(this.recipes.slice());
   }
 
-  getRecipe(index: number) {
+  getRecipe(index: number): Recipe {
     return this.recipes[index];
   }
 

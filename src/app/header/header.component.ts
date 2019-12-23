@@ -16,7 +16,7 @@ export class HeaderComponent {
       private myHttpClient: HttpClient
   ) { }
 
-  sendData(bitOText) {
+  sendBitOText(bitOText) { // TODO 20191221-0802 refactor the HTTP biz here to DataStorageService
     console.log('Header sendData', bitOText);
     const bitOJSON = { stuff: bitOText };
     this.myHttpClient.post('https://wr-ng8-prj-recipes-wr2.firebaseio.com/tossthings.json',
@@ -27,8 +27,14 @@ export class HeaderComponent {
         });
   }
 
+  sendData() {
+    this.myDataStorageService.storeRecipes(); // fire & forget
+  }
+
   fetchData() {
-    this.myDataStorageService.fetchRecipes();
+    this.myDataStorageService.fetchRecipes().subscribe(); // << kinda benign noop .subscribe() cheers
+    // 03 Now with Resolver biz we changed data service so yeah now we gotta trigger from here w .subscribe()
+    // WAS:  fire & forget
         // 02 NOW 1) Service does do .subscribe(). Also, the Service method returns void, so, we don't do .pipe() here either. Cheers.
         // 01 WAS N.B. The Service method does not do '.subscribe()'. Va bene.
         /*

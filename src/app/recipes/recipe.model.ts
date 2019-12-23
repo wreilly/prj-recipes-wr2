@@ -1,5 +1,7 @@
 import { Ingredient } from '../shared/ingredient.model';
 
+// N.B. *NO* "ID" is dealt with here. Hmm.
+
 /* CLASS is Instructor Code way. okay */
 export class Recipe {
   public name: string;
