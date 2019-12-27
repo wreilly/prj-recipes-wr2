@@ -16,7 +16,8 @@ export class HeaderComponent {
       private myHttpClient: HttpClient
   ) { }
 
-  sendBitOText(bitOText) { // TODO 20191221-0802 refactor the HTTP biz here to DataStorageService
+  // tslint:disable-next-line:max-line-length
+  sendBitOText(bitOText) { // TODONE 20191221-0802 refactor the HTTP biz here to DataStorageService (basically, this is superseded by sendData(). Cheers.
     console.log('Header sendData', bitOText);
     const bitOJSON = { stuff: bitOText };
     this.myHttpClient.post('https://wr-ng8-prj-recipes-wr2.firebaseio.com/tossthings.json',

@@ -1,0 +1,49 @@
+<div class="row">
+    <div class="col-xs-12 col-md-6 col-md-offset-3">
+<!--        https://stackoverflow.com/questions/38500828/whats-exactly-the-purpose-of-col-md-offset-->
+        <div class="alert alert-danger" *ngIf="errorToDisplay">
+            {{ errorToDisplay }}
+        </div>
+        <div *ngIf="isLoading">
+            <h1>S-P-I-I-I-N-N-E-R</h1>
+            <app-loading-spinner></app-loading-spinner>
+        </div>
+        <form
+                *ngIf="!isLoading"
+                bind-formGroup="myFormGroup"
+                on-ngSubmit="myOnSubmit(myFormGroup)"
+        >
+            <div class="form-group">
+                <label for="emailId">E-Mail Address</label>
+                <input
+                        type="email"
+                        name="emailName"
+                        id="emailId"
+                        class="form-control"
+                        formControlName="myEmailFormControlName"
+                        placeholder="email pls"
+                >
+            </div>
+            <div class="form-group">
+                <label for="passwordId">Password</label>
+                <input
+                        type="password"
+                        name="passwordName"
+                        id="passwordId"
+                        class="form-control"
+                        formControlName="myPasswordFormControlName"
+                        placeholder="password pls (min 6)"
+                >
+            </div>
+            <button class="btn btn-success"
+                    type="submit"
+                    bind-disabled="!myFormGroup.valid"
+            >{{ isLoginMode ? 'Log In' : 'Sign Up' }}</button>
+            |
+            <button class="btn btn-primary"
+                    type="button"
+                    on-click="mySwitchMode()"
+            >Switch to {{ isLoginMode ? ' Sign Up' : ' Log In' }}</button>
+        </form>
+    </div>
+</div>
