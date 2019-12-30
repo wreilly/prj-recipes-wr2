@@ -27,12 +27,13 @@ export class AuthComponent implements OnInit {
     isLoading = false; // spinner-biz
 
     nowAmReady = true; // false;
-
-    /* Ready to use the Observable here in the Component, as receiving the Service's return (vs. doing the .subscribe() here in the Component).
+/* Ready to use the Observable here in the Component, as receiving the Service's return (vs. doing the .subscribe() here in the Component).
      */
 
     myAuthObservable: Observable<AuthResponseData>;
     errorToDisplay: string = null;
+
+    isLoggedIn = false;
 
     constructor(
         private myAuthService: AuthService,
@@ -69,19 +70,35 @@ export class AuthComponent implements OnInit {
         // Recall: This method does BOTH 1) Sign Up and 2) Log In
 
         if (!formIGot.valid) {
-            // you shouldn't get in here... but
-            return; // tsk, tsk, monsieur Le Hacker!
+            // you shouldn't get in here... but just in case
+            return; // << tsk, tsk, monsieur Le Hacker!
         }
         this.isLoading = true;
 
-        console.log('formIGot.value ', formIGot.value); // yep. {myEmailFormControlName: "tony"}
+        console.log('formIGot.value ', formIGot.value);
         // Yeah. {myEmailFormControlName: "necessary2@cat.edu", myPasswordFormControlName: "iamacat3"}
 
         if (this.isLoginMode) {
-            // ... this.myAuthService.login() // << TODO
-            return; // ?
+            this.myAuthObservable = this.myAuthService.logIn({
+                    'email': formIGot.value.myEmailFormControlName,
+                    'password': formIGot.value.myPasswordFormControlName,
+                }
+            );
+
+/* NOPE. Just subscribe ONCE (further below) (to cover both Log In, and Sign Up)
+
+            this.myAuthObservable.subscribe(
+                (whatWeGot) => {
+                    console.log('88 whatWeGot ', whatWeGot);
+                },
+                (errWeGot) => {
+                    console.error('88 errWeGot ', errWeGot);
+                }
+            );
+*/
         } else if (this.nowAmReady) {
-            /* 02 We removed the .subscribe() here. That way what's returned
+            /* 02 Part 1.
+            We removed the .subscribe() here. That way what's returned
             from the Service can be received here as an Observable,
             doesn't have to be ( ? ) a Subscription. Hmm.
             And, yeah, we will (below) do a .subscribe() off of that Observable. Cheers.
@@ -121,19 +138,20 @@ export class AuthComponent implements OnInit {
                         this.isLoading = false;
                     },
                     (errIfAny) => {
-                        console.log('errIfAny in Component ', errIfAny); // yes whole HttpErrorResponse {}
+                        console.log('errIfAny in Component ', errIfAny); // yes, WAS whole HttpErrorResponse {}
                         /*
                         errIfAny in Component  HttpErrorResponse {headers: HttpHeaders, status: 404, statusText:
                         "Not Found", url: "https://foobarw
                          */
                         // this.errorToDisplay = errIfAny.error.error.message;
-                        this.errorToDisplay = errIfAny; // Now this is the error message string only = good, what you want.
+                        this.errorToDisplay = errIfAny; // NOW this is the error message string only = good, what you want.
                         this.isLoading = false;
                     }
                 );
         }
 
         if (this.nowAmReady) {
+            // 02, part 2
             this.myAuthObservable.subscribe(
                 (whatIGot) => {
                     console.log('whatIGot ', whatIGot); // yes
@@ -169,10 +187,14 @@ localId: "LdfKHjIaVldC1WkNWhMOz2xe8e83"
         // this.isLoading = false; // temporary
         // return; // temporary
 
-    }
+    } // /myOnSubmit() = BOTH Sign Up AND Log In
 
     mySwitchMode() {
         this.isLoginMode = !this.isLoginMode;
+    }
+
+    dismissErrorToDisplay() {
+        this.errorToDisplay = null;
     }
 
 }
