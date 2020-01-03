@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService, AuthResponseData } from './auth.service';
 
 @Component({
@@ -30,13 +31,14 @@ export class AuthComponent implements OnInit {
 /* Ready to use the Observable here in the Component, as receiving the Service's return (vs. doing the .subscribe() here in the Component).
      */
 
-    myAuthObservable: Observable<AuthResponseData>;
+    myAuthObservable: Observable<AuthResponseData>; // BOTH log in and sign up
     errorToDisplay: string = null;
 
     isLoggedIn = false;
 
     constructor(
         private myAuthService: AuthService,
+        private myRouter: Router,
     ) {
 
     }
@@ -96,7 +98,7 @@ export class AuthComponent implements OnInit {
                 }
             );
 */
-        } else if (this.nowAmReady) {
+        } else if (this.nowAmReady) { // Not LoginMode, so we are Sign Up!
             /* 02 Part 1.
             We removed the .subscribe() here. That way what's returned
             from the Service can be received here as an Observable,
@@ -116,7 +118,7 @@ export class AuthComponent implements OnInit {
             You could assign what's returned to a Subscription (we are not doing
             that here).
              */
-            this.myAuthService.signup(
+            this.myAuthService.signup( // << NO LONGER USING
                 {
                     email: formIGot.value.myEmailFormControlName,
                     password: formIGot.value.myPasswordFormControlName,
@@ -164,19 +166,40 @@ expiresIn: "3600"
 localId: "LdfKHjIaVldC1WkNWhMOz2xe8e83"
                      */
                     this.isLoading = false;
-                },
+                    // TIME TO NAVIGUESS! ;o)
+                    this.myRouter.navigate(['/recipes'])
+                        // PROMISE off of .navigate()
+                        // https://javascript.info/promise-basics#consumers-then-catch-finally
+                        .then(
+                            (whatWeGotTF) => {
+                            if (whatWeGotTF) {
+                                console.log('T ! guess we naviguessed A-O.K.');
+                            } else {
+                                console.log('F ? guess we navigoofed somehow');
+                            }
+                        },
+                            (errWeGot) => {
+                                console.log('errWeGot navigating ', errWeGot);
+                                /* Yeah!
+                                error: "Permission denied"
+
+                                HttpErrorResponse {headers: HttpHeaders, status: 401, statusText: "Unauthorized", url: ...
+                                 */
+                            });
+                }, // /.subscribe() "next"
                 (errIGot) => {
                     console.error('errIGot ', errIGot);
                     // this.errorToDisplay = errIGot.error.error.message; // moved to Service
                     // this.errorToDisplay = JSON.stringify(errIGot);
-                    this.errorToDisplay = errIGot; // JSON biz over on Service now
+                    this.errorToDisplay = errIGot; // JSON biz over on Service now, no longer here in Component. Cheers.
                     // Now this is the error message string only = good, what you want.
                     /*
                     Hmm. JSON.stringify() is good when we send whole [object Object]
                     But it does put double-quotes around it when we just get back a string. Looks little funny, but, acceptable.
+                    << However, we did put the kabosh on it. No funny double-quotes, thank you.
                      */
                     this.isLoading = false;
-                }
+                } // /.subscribe() "error"
             );
         }
 

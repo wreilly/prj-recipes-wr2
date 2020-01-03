@@ -28,6 +28,10 @@ owing to this total fetch, you re-get/fetch what is on backend and you don't hav
         if (recipesWeMayHaveLocal.length === 0) {
             // t'ain't none! Let's go fetch
             return this.myDataStorageService.fetchRecipes();
+            /*
+            N.B. At least right now ( ? ) the .subscribe() is found on
+            calling Component Header. Cheers.
+             */
         } else {
             // we have some so let's just work with those local = latest info & Etc. :o)
             console.log('recipesWeMayHaveLocal ', recipesWeMayHaveLocal); // yeah

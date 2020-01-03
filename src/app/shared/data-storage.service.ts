@@ -1,10 +1,12 @@
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpErrorResponse} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse, HttpParams} from '@angular/common/http';
 // import {Subject, throwError} from 'rxjs'; // << NO not here in Service
 import {Observable, throwError} from 'rxjs';
-import {tap, map, catchError} from 'rxjs/operators';
+import {tap, map, take, exhaustMap, catchError} from 'rxjs/operators';
 import { RecipeService } from '../recipes/recipe.service';
 import { Recipe } from '../recipes/recipe.model';
+import { User } from '../auth/user.model';
+import { AuthService } from '../auth/auth.service';
 
 /* @Injectable() */
 @Injectable({
@@ -26,6 +28,7 @@ No.
         private myHttp: HttpClient, // << shortcut, default way we've been doing
         // myHttp: HttpClient, // << see note below NOT GETTING TO WORK any "long cut". Hmmph. o well.
         private myRecipeService: RecipeService,
+        private myAuthService: AuthService,
         ) { }
         /*
         NOTE on 'private'
@@ -56,16 +59,224 @@ No.
     at _callFactory (core.js:20296)
     at _createProviderInstance ...
      */
+    // fetchRecipes(): Observable<Recipe[]> {
+    fetchRecipes() { // seems to not have needed the type return (line above) Okay.
+        return this.myAuthService.userSubject$
+            .pipe(
+                tap(userIGot => {
+                    console.log('WR__CODE fetchRecipes TAP() userIGot y not ', userIGot); //
+                    }
+                ),
+                take(1), // gets the 1 item that Subject will yield up: our User
 
-    storeRecipe() {
-        // TODO
-    }
+                /* https://blog.angular-university.io/rxjs-higher-order-mapping/
+           ExhaustMap: "ignore new values in the source Observable
+           until the previous value is completely processed"
+                 */
+                exhaustMap(
+                    didWeGetAUser => {
+                        console.log('WR__CODE fetchRecipes EXHAUSTMAP() didWeGetAUser y not ', didWeGetAUser); //
+                        return this.myHttp.get<Recipe[]>(
+                                'https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json',
+                            {
+                                params: new HttpParams().set('auth', didWeGetAUser.token)
+                            }
+                        );
+                    }),
+/* Whoops. Don't do this nested .pipe() biz.
+                            .pipe(
+*/
+                map(
+                    recipesFetched => {
+                        return recipesFetched.map(
+                            eachRecipe => {
+                                return {
+                                    ...eachRecipe,
+                                    ingredients: eachRecipe.ingredients ? eachRecipe.ingredients : []
+                                };
+                            }); // /.map()
+                    }), // map()
+/* This map() not working. Cheers.
+                map(
+                    (recipesFetched: Recipe[]) => {
+                        const newArrayRecipesWithAtLeastEmptyIngredients: Recipe[] = [];
+                        recipesFetched.map(
+                            eachRecipe => {
+                                newArrayRecipesWithAtLeastEmptyIngredients.push(
+                                    {
+                                        ...eachRecipe,
+                                        'ingredients': eachRecipe.ingredients ? eachRecipe.ingredients : []
+                                    }
+                                );
+                            }
+                        );
+                        return newArrayRecipesWithAtLeastEmptyIngredients;
+                    }
+                ),
+*/
+                tap(
+                    newArrayRecipesWithAtLeastEmptyIngredientsWeGot => {
+                        this.myRecipeService.setRecipes(newArrayRecipesWithAtLeastEmptyIngredientsWeGot);
+                    }
+                ) // /tap()
 
+/* As above, Don't Do this nested .pipe() biz
+                            ); // /.pipe() inner
+*/
+
+            ); // /.pipe() << one-and-only   // >> nope: outer
+    } // /fetchRecipes()
+
+
+
+    fetchRecipesOLDER(): Observable<Recipe[]> {
+        /* ************************************
+        THIS DID NOT WORK (either)
+
+        I below am trying to 1) go to Auth Service
+        and get the User and get the G.D. TOKEN
+        and put it in a variable.
+
+        Because I then expect to 2) proceed to use that
+        variable in the HTTP GET, in a subsequent, separate
+        codeblock.
+
+        WRONG.
+
+        Instead you need to (see fetchRecipes() above)
+        1) yeah get the Auth Service User and the token,
+        but 2) you need to run the HTTP GET ***Right Within***
+        the codeblock wherein you obtained the Auth Service
+        User Token.
+
+        ********* /DID NOT WORK  *************
+         */
+/* Nah!
+        let bearerTokenToSend: string;
+        let thisUserObservable: Observable<User>;
+        /!* Hmm. line below:
+        "error TS2322: Type 'Observable<User>' is not assignable to type 'string'."
+         *!/
+        thisUserObservable = this.myAuthService.userSubject$
+            .pipe(
+                tap(
+                    (thatUser) => {
+                        let tokenWeGot;
+                        tokenWeGot = thatUser.token; // string, n'est-ce pas?
+                        return tokenWeGot; // string, n'est-ce pas?
+                    }
+                ),
+                map(
+                    (godDamnedTokenWeGot) => {
+                        return godDamnedTokenWeGot;
+                    }
+                )
+            );
+*/
+
+/* Nah.
+        thisUserObservable.subscribe(
+            (sheeshUser) => {
+                bearerTokenToSend = sheeshUser.token;
+                return bearerTokenToSend;
+            }
+        )
+*/
+
+        return this.myHttp.get<Recipe[]>(
+            'https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json',
+            {
+                /* No. Firebase has different way (param). Header is for ROW (Rest Of World).
+                                headers: {
+                                    Authentication: 'Bearer' + bearerTokenToSend
+                                }
+                */
+               // params: new HttpParams().set('auth', bearerTokenToSend)
+                // warning from IDE: 'variable may not have been initialized' << oh yeah! right you are, re: my bearerTokenToSend. Sheesh.
+            }
+        )
+            .pipe(
+                /* this bit wasn't doing anything ... okay. */
+                map(
+                    (recipesFetched: Recipe[]) => {
+                        console.log('recipesFetched ', JSON.stringify(recipesFetched));
+                        /* Recipe with NO INGREDIENTS[]:
+                        {"description":"T'ain't none!",
+                        "imagePath":"https://drdavinahseats.com/uploa...aled.png",
+                        "name":"Surf. Turf. No Ingredients You Say NO WAY!"},
+                         */
+                        const newArrayRecipesWithAtLeastEmptyIngredients: Recipe[] = [];
+                        recipesFetched.map(
+                            eachRecipe => {
+                                newArrayRecipesWithAtLeastEmptyIngredients.push(
+                                    {
+                                        ...eachRecipe,
+                                        'ingredients': eachRecipe.ingredients ? eachRecipe.ingredients : []
+                                    }
+                                );
+                            }
+                        );
+                        console.log('newArrayRecipesWithAtLeastEmptyIngredients ', JSON.stringify(
+                            newArrayRecipesWithAtLeastEmptyIngredients
+                        ));
+                        /*Recipe with AT LEAST EMPTY INGREDIENTS[]:
+                        {"description":"T'ain't none!",
+                        "imagePath":"https://drdavinahseats.com/uploa...aled.png",
+                        "name":"Surf. Turf. No Ingredients You Say NO WAY!",
+                        "ingredients":[]}
+                         */
+                        return newArrayRecipesWithAtLeastEmptyIngredients;
+                    }
+                ),
+                tap(
+                    recipesFetched => {
+                        this.myRecipeService.setRecipes(recipesFetched);
+                    }
+                )
+            ); // /.pipe()
+    } // /fetchRecipesOLDER() // << NOT CALLING
+
+
+
+    fetchRecipesOLDEST() { // void {
     // fetchRecipes(): Observable<Recipe[]> { // void {
-    fetchRecipes() { // void {
+
+/*  ****************************
+THIS DID NOT WORK
+Trying "my way" to add Token to the Request.
+
+        const thisUserTokenNow = this.myAuthService.userSubject$.pipe(
+            tap(whatWeGot => console.log('TAP? ', whatWeGot)), // hmm, NOT SEEN.
+            take(1),
+            exhaustMap(userIGot => {
+                console.log('exhaustMap? ', userIGot); // hmm, NOT SEEN, EITHER.
+                return userIGot.token;
+            }) // implicit (shorthand) 'return'. Who knew.
+        );
+
+        console.log('thisUserTokenNow ', thisUserTokenNow);
+        /!* Hmm. as in, wtf. Etc.
+        thisUserTokenNow  AnonymousSubject {_isScalar: false, observers: Array(0), ...
+         *!/
+
+        // console.log('JSON etc. thisUserTokenNow ', JSON.stringify(thisUserTokenNow));
+        // No. Circular berkular.
+
+        / ***** /(above) DID NOT WORK  ****************
+*/
+
         return this.myHttp.get<Recipe[]>( // << 03 'return' is back. Oi!<< 02 removed the 'return' after all
             // Also: Best to put the Type there on the .get()
             // 'https://wr-ng8-prj-recipes-wr2.firebaseio.com/tossthings.json',
+            /* https://firebase.google.com/docs/database/rest/auth#authenticate_with_an_id_token
+            curl "https://<DATABASE_NAME>.firebaseio.com/users/ada/name.json?auth=<ID_TOKEN>"
+             */
+/* Yeah worked. Pre-token.
+            'https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json',
+*/
+/* Nope.
+            `https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json?auth=${thisUserTokenNow}`,
+*/
             'https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json',
             )
             .pipe(
@@ -95,7 +306,7 @@ No.
                     }
 */
                     (recipesWeFetched: Recipe[]) => {
-                        const recipesWithAtLeastEmptyArrayIngredients = recipesWeFetched.map(
+                        const recipesWithAtLeastEmptyArrayIngredients: Recipe[] = recipesWeFetched.map(
                             eachRecipe => {
                                 return {
                                     ...eachRecipe, // good old spread operator whatever would we do without it
@@ -143,7 +354,11 @@ No.
                 }
             );
 */
-    } // /fetchRecipes()
+    } // /fetchRecipesOLDEST() // << NOT CALLING
+
+    storeRecipe() {
+        // TODO (store 1 Recipe) ?
+    }
 
     storeRecipes() {
         const recipesToStore: Recipe[] = this.myRecipeService.getRecipes();
