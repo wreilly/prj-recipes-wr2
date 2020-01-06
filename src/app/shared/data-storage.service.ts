@@ -1,11 +1,11 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpParams} from '@angular/common/http';
 // import {Subject, throwError} from 'rxjs'; // << NO not here in Service
-import {Observable, throwError} from 'rxjs';
+import {Observable, ObservableInput, throwError, Subscription} from 'rxjs';
 import {tap, map, take, exhaustMap, catchError} from 'rxjs/operators';
 import { RecipeService } from '../recipes/recipe.service';
 import { Recipe } from '../recipes/recipe.model';
-import { User } from '../auth/user.model';
+import { User } from '../auth/user.model'; // << Yah. Just to Type a parameter; see below. << Nah.
 import { AuthService } from '../auth/auth.service';
 
 /* @Injectable() */
@@ -59,11 +59,71 @@ No.
     at _callFactory (core.js:20296)
     at _createProviderInstance ...
      */
-    // fetchRecipes(): Observable<Recipe[]> {
-    fetchRecipes() { // seems to not have needed the type return (line above) Okay.
+
+
+    // fetchRecipes(): void {
+    fetchRecipes(): Observable<Recipe[]> {
+        // >> NOPE. Tried it. Nope. >> N.B. Now returns just void, because We also now do .subscribe() here no longer off HeaderComponent y not
+
+        /*
+       Note re: .subscribe()
+       - Over on storeRecipes(), we do the .subscribe() right here in the Service.
+       What comes back is kinda benign, etc., on "storing"
+       - Whereas HERE, on fetchRecipes(), we do NOT do the .subscribe() here.
+       Instead, for "fetching," let the calling Component/Etc. do the .subscribe()
+       Let the caller get back an Observable<Recipe[]>
+       This is needed by the RecipesResolverService for example.
+        */
+
+
+        // << A la MAX Code.
+        // We now use HTTPInterceptor for AUTH/TOKEN logic etc.
+        // Let DataStorageService just fetch/store.
+
+
+        return this.myHttp.get<Recipe[]>(
+            // << N.B. before .subscribe() here, this line had 'return'
+            // No longer .subscribe() here, so the 'return is restored (above)
+            'https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json')
+            .pipe(
+                map(
+                    recipesFetched => {
+                        return recipesFetched.map(
+                            eachRecipe => {
+                                return {
+                                    ...eachRecipe,
+                                    ingredients: eachRecipe.ingredients ? eachRecipe.ingredients : []
+                                };
+                            }); // /.map() (Array map)
+                    }), // /map() (RXJS map)
+                tap(
+                    newArrayRecipesWithAtLeastEmptyIngredientsWeGot => {
+                        this.myRecipeService.setRecipes(newArrayRecipesWithAtLeastEmptyIngredientsWeGot);
+                    }
+                ) // /tap()
+            ); // /.pipe()
+/* I tried the .subscribe() here but bumped into problem with RecipesResolverService.
+
+            .subscribe(
+                (whatWeGotBackFetching) => { console.log('whatWeGotBackFetching ', whatWeGotBackFetching); } // yep. Recipe[]
+                /!*
+                [{…}, {…}, {…}, {…}, {…}, {…}]
+                 *!/
+            );
+*/
+
+        /* OLDER NOTE: (now we do .subscribe() here y not)
+        Do Note:
+        The calling HeaderComponent invokes the (necessary) '.subscribe()' to kick this off.
+         */
+    } // /fetchRecipes()
+
+
+    // fetchRecipesWORKED(): Observable<Recipe[]> {
+    fetchRecipesWORKED() { // seems to not have needed the type return (line above) Okay.
         return this.myAuthService.userSubject$
             .pipe(
-                tap(userIGot => {
+                tap((userIGot: User) => {
                     console.log('WR__CODE fetchRecipes TAP() userIGot y not ', userIGot); //
                     }
                 ),
@@ -84,7 +144,7 @@ No.
                         );
                     }),
 /* Whoops. Don't do this nested .pipe() biz.
-                            .pipe(
+                            .pipe( // << NOPE. Not a "nested" .pipe() thank you very much.
 */
                 map(
                     recipesFetched => {
@@ -125,7 +185,7 @@ No.
 */
 
             ); // /.pipe() << one-and-only   // >> nope: outer
-    } // /fetchRecipes()
+    } // /fetchRecipesWORKED()
 
 
 
@@ -360,7 +420,90 @@ Trying "my way" to add Token to the Request.
         // TODO (store 1 Recipe) ?
     }
 
-    storeRecipes() {
+
+    storeRecipes(): Subscription {
+        // << A la MAX Code.
+        // We now rely on HTTPInterceptors re: AUTH/TOKEN etc.
+
+        /*
+        Note re: .subscribe()
+        - Here on storeRecipes(), we do the .subscribe().
+        What comes back is kinda benign, etc., on "storing"
+        - Whereas on fetchRecipes(), we do NOT do the .subscribe() here.
+        Instead, for "fetching," let the calling Component/Etc. do the .subscribe()
+        Let the caller get back an Observable<Recipe[]>
+        This is needed by the RecipesResolverService for example.
+         */
+
+        const recipesToStore: Recipe[] = this.myRecipeService.getRecipes();
+
+        // Yeah! Worked great. Cheers.
+        if (recipesToStore.length === 0) {
+            // Oops we prob don't want to send 0 Recipes back to Firebase. No.
+            alert('We are not going to let you ZERO OUT your Firebase Database. Solly!');
+            return;
+        }
+        return this.myHttp.put(
+                        'https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json',
+                        recipesToStore,
+                    ) // /.put()
+                        .pipe(
+                            tap(
+                                (whatWeGotSending) => {
+                                    console.log('whatWeGotSending ', whatWeGotSending);
+                                } // yep: {name: "-LwhEb8qPJct0j7yBgWl"}
+                            )
+                            // N.B. I've removed catchError() from here; now on the Interceptor.
+                        ) // /.pipe()
+            .subscribe(
+                (whatWeGotSending) => { console.log('whatWeGotSending ', whatWeGotSending); } // yep: {name: "-LwhEb8qPJct0j7yBgWl"}
+            );
+
+    } // /storeRecipes()
+
+
+
+    storeRecipesWORKED() {
+        const recipesToStore: Recipe[] = this.myRecipeService.getRecipes();
+        return this.myAuthService.userSubject$.pipe(
+            take(1), // gets user data, once. unsubscribes.
+            exhaustMap(
+                (userWeGot: User): ObservableInput<any> => {
+                    return this.myHttp.put(
+                        'https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json',
+                        recipesToStore,
+                        {
+                            params: new HttpParams().set('auth', userWeGot.token)
+                        }
+                    ); // /.put()
+                }
+            ), // /exhaustMap()
+            catchError(
+                (catchErrorWeGot: HttpErrorResponse) => {
+                    console.log('catchErrorWeGot ', catchErrorWeGot);
+                    if (catchErrorWeGot.error instanceof ErrorEvent) {
+                        // A client-side or network error occurred. Handle it accordingly.
+                        console.error('An error occurred:', catchErrorWeGot.error.message);
+                    } else {
+                        // The backend returned an unsuccessful response code.
+                        // The response body may contain clues as to what went wrong,
+                        console.error(
+                            `Backend returned code ${catchErrorWeGot.status}, ` +
+                            `body was: ${ JSON.stringify(catchErrorWeGot.error) }`);
+                    }
+                    // return an observable with a user-facing error message
+                    return throwError('Oops Send Data');
+                }
+            ) // /catchError()
+        ) // /.pipe()
+            .subscribe(
+                (whatWeGotSending) => { console.log('whatWeGotSending ', whatWeGotSending); } // yep: {name: "-LwhEb8qPJct0j7yBgWl"}
+            );
+    } // /storeRecipesWORKED()
+
+
+
+    storeRecipesOLDER() {
         const recipesToStore: Recipe[] = this.myRecipeService.getRecipes();
         this.myHttp.put( // << Whoops PUT not POST
             // 'https://wr-ng8-prj-recipes-wr2.firebaseio.com/tossthings.json',
@@ -416,6 +559,6 @@ defaultErrorLogger
             .subscribe(
                 (whatWeGotSending) => { console.log('whatWeGotSending ', whatWeGotSending); } // yep: {name: "-LwhEb8qPJct0j7yBgWl"}
             ); // gotta trigger it to GO!
-    } // /storeRecipes()
+    } // /storeRecipesOLDER()
 
 }

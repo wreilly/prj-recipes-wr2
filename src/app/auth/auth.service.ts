@@ -8,11 +8,11 @@ import {User} from './user.model';
 export interface AuthResponseData {
     kind: string; // YER WRONG >> << No longer used by Firebase (or us). Was 'identitytoolkit#VerifyPasswordResponse', fwiw.
     // Hmm, I'm WRONG about above. We DO see this *come back* (we did not *send it*): e.g. kind: "identitytoolkit#VerifyPasswordResponse",
-    idToken: string;
+    idToken: string; // big long token...
     email: string;
-    refreshToken: string;
+    refreshToken: string; // another big long token...
     expiresIn: string; // a number we handle/receive as a string, simply
-    localId: string; // Firebase User ID e.g. 'WFVtoZD1FogRdnkQ3qP6fhNzdxl2'
+    localId: string; // Firebase "User UID" e.g. 'WFVtoZD1FogRdnkQ3qP6fhNzdxl2'
     registered?: boolean; // Log In, not Sign Up
 }
 // registered: boolean // << comes back on Log In, not Sign Up.
@@ -117,11 +117,84 @@ expiresIn: "3600"
             ); // /.pipe()
     } // /login()
 
+    autoLogIn() {
+        // Check LOCALSTORAGE for myUserData! If so, then we're good to go! (who knew?)
+        if (localStorage.getItem('myUserData') !== null) {
+            const heyWeAreLoggedInUserDataString: string = localStorage.getItem('myUserData');
+            console.log('heyWeAreLoggedInUserDataString ', heyWeAreLoggedInUserDataString);
+            /*
+            email: "necessary@cat.edu"
+    id: "hMv51L1tHof1paEgJe9ZEjUVhH82"
+    _token: "eyJhbG...CNywVQ"
+    _tokenExpirationDate: "2020-01-05T14:39:34.039Z"
+             */
+            const loggedInUserObjectNow: { // Let's explicitly show the Type we get,
+                // once we "JSON.parse()" the string that we got back out of localStorage:
+                email: string;
+                id: string;
+                _token: string;
+                _tokenExpirationDate: string; // << all strings, not a Date
+            } = JSON.parse(heyWeAreLoggedInUserDataString);
+
+/* Nope. Almost. Good idea. But,
+      instead of going into that "handler"
+      (which basically just does new User()),
+      we'll just do our own new User() right here (below)
+
+            this.handleAuthentication(
+                loggedInUserObjectNow.email,
+                loggedInUserObjectNow.id,
+                loggedInUserObjectNow._token,
+                new Date(loggedInUserObjectNow._tokenExpirationDate)
+            );
+*/
+
+            const thisHereAutoLogInUser = new User(
+                loggedInUserObjectNow.email,
+                loggedInUserObjectNow.id,
+                loggedInUserObjectNow._token,
+                new Date(loggedInUserObjectNow._tokenExpirationDate)
+            );
+
+            if (thisHereAutoLogInUser.token) {
+                /*
+                The .token GETTER tells us whether the localStorage User
+                still has valid ("live") token or not
+                If still good (within 3,600 seconds = 1 hour),
+                then we are good to go.
+                If token is too old, user will NOT get AutoLogIn and has to
+                do regular Log In.
+
+                I guess question I have is: hmm, if say 56 minutes were gone on that hour,
+                does this AutoLogin only then last you say 4 minutes more ????
+                We save the exact same User data back in to localStorage,
+                including that TokenExpiration if I am not mistaken. Hmmmmmmm.
+                 */
+                this.userSubject$.next(thisHereAutoLogInUser);
+                localStorage.setItem('myUserData', JSON.stringify(thisHereAutoLogInUser));
+                /*
+                LOCALSTORAGE
+    --------------
+    myUserData
+
+    email: "necessary@cat.edu"
+    id: "hMv51L1tHof1paEgJe9ZEjUVhH82"
+    _token: "eyJhbG...CNywVQ"
+    _tokenExpirationDate: "2020-01-05T14:39:34.039Z"
+    --------------
+                 */
+            }
+
+
+        }
+    }
+
     logout() {
         this.userSubject$.next(null);
         // Maybe do navigate here too; for now, over on HeaderComponent y not
         this.myRouter.navigate(['/auth'])
             .then(goodOrBad => console.log(goodOrBad));
+        localStorage.removeItem('myUserData');
     } // /logout()
 
     private handleAuthentication(
@@ -129,7 +202,7 @@ expiresIn: "3600"
         email: string,
         userLocalId: string,
         token: string,
-        expiresIn: number, // << don't forget to '+' passed-in string to numberify!
+        expiresIn: number, // 3600 << don't forget to '+' passed-in string to numberify!
     ): void { // << no return. instead uses .next() ...
 
         /*
@@ -137,8 +210,8 @@ expiresIn: "3600"
         Time to:
          0) determine Date object / milliseconds till expire,
          1) new() up a User, and
-         2) ".next()" up
-            that User via our userSubject$ !
+         2) ".next()" propagate to any subscribers,
+         info about that User, via our userSubject$ !
          */
 
         /*
@@ -167,10 +240,26 @@ expiresIn: "3600"
             console.log('WR__ just newed-up() User thisHereUser: ', thisHereUser); // hmm. empty baby. not good.
 
             this.userSubject$.next(thisHereUser);
+            localStorage.setItem('myUserData', JSON.stringify(thisHereUser));
+            /*
+            LOCALSTORAGE
+--------------
+myUserData
+
+email: "necessary@cat.edu"
+id: "hMv51L1tHof1paEgJe9ZEjUVhH82"
+_token: "eyJhbG...CNywVQ"
+_tokenExpirationDate: "2020-01-05T14:39:34.039Z"
+--------------
+             */
 
         } // /handleAuthentication()
 
     private handleError(errInService: HttpErrorResponse): Observable<never> {
+        /*
+        N.B. For Heck Of It
+        I have also copied this 'handleError()' over to the Interceptor. Cheers.
+         */
         /*
         rxjs throwError "creates an Observable that never emits any value. Observable<never>
         Instead, it errors out immediately using the same error caught by catchError"

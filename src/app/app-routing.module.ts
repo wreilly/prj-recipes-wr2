@@ -8,6 +8,18 @@ import { RecipeDetailComponent } from './recipes/recipe-detail/recipe-detail.com
 import { RecipeEditComponent } from './recipes/recipe-edit/recipe-edit.component';
 
 import { RecipesResolverService } from './recipes/recipes-resolver.service';
+/*
+We "resolve" for 2 scenarios:
+- RecipeDetail /:id
+- RecipeEdit   /:id/edit
+On both of these pages, if the user happens to hit Refresh,
+we do NOT want to go get all Recipe[] data from Firebase,
+IF we already do have "local" data Recipes.
+The "local" would at this juncture be the canonical, latest,
+greatest Recipes data. Don't overwrite it by going back to Firebase!
+That's what the Resolver determines.
+ */
+
 import {AuthComponent} from './auth/auth.component';
 
 const appRoutes: Routes = [

@@ -57,10 +57,19 @@ export class HeaderComponent implements OnInit, OnDestroy{
 
   sendData() {
     this.myDataStorageService.storeRecipes(); // fire & forget
+    /* N.B. storeRecipes() "returns" a Subscription, but the called method does
+    its own .subscribe() over in that Service,
+    so from this vantage (calling Component), nothing "comes back". MBU.
+    */
   }
 
   fetchData() {
+    this.myDataStorageService.fetchRecipes(); // See Comment just below. .subscribe() is in Service instead
+/* Hmm, maybe for consistency ( ? ) I'll move the .subscribe() to the Service, not this calling Component (that doesn't do anything with what's returned anyway).
+So: Also "fire & forget" from here. Cheers.
+
     this.myDataStorageService.fetchRecipes().subscribe(); // << kinda benign noop .subscribe() cheers
+*/
     // 03 Now with Resolver biz we changed data service so yeah now we gotta trigger from here w .subscribe()
     // WAS:  fire & forget
         // 02 NOW 1) Service does do .subscribe(). Also, the Service method returns void, so, we don't do .pipe() here either. Cheers.

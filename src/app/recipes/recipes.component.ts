@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
+// import { AuthService } from '../auth/auth.service'; // << Put to AppComponent instead
+
 /* No Longer Used
 import { Recipe } from './recipe.model';
 */
@@ -27,9 +29,14 @@ export class RecipesComponent implements OnInit {
 /* No Longer Used:
     constructor(private recipeService: RecipeService) { }
 */
-    constructor() { }
+    constructor(
+        // private myAuthService: AuthService,  // << Put to AppComponent instead
+    ) { }
 
   ngOnInit() {
+
+      // this.myAuthService.autoLogIn();  // << Put to AppComponent instead // Worked! >> Give it a shot, here at the git-go
+
 /* RXJS SUBJECT NOW
     this.recipeService.recipeSelected
 */

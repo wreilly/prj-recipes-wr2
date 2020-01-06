@@ -27,6 +27,10 @@ import { AuthComponent } from './auth/auth.component';
 // import { AuthService } from './auth/auth.service';
 import { LoadingSpinnerComponent } from './shared/loading-spinner/loading-spinner.component';
 
+// Ye Olde Barrel (of Interceptors)
+// Nah: import { AuthInterceptorService } from './http-interceptors/auth-interceptor.service';
+import { HttpInterceptorsMyConst } from './http-interceptors/index';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -50,7 +54,11 @@ import { LoadingSpinnerComponent } from './shared/loading-spinner/loading-spinne
     AppRoutingModule,
     HttpClientModule,
   ],
-  providers: [ ShoppingListService, RecipeService ],
+  providers: [
+    ShoppingListService,
+    RecipeService,
+    HttpInterceptorsMyConst,
+  ],
   // WR__ test editing added RecipeService.
   // yes, needs to be here at root, not up/over in a Shopping component...
   // https://itnext.io/understanding-provider-scope-in-angular-4c2589de5bc
