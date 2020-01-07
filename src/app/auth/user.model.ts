@@ -59,7 +59,8 @@ Leaving off the 'public' and 'private' totally messed up constructing new User. 
     ) {
         // O LA!!!
         // What I forgot was here inside constructor braces codeblock!!!
-        // To make the ASSIGNMENTS from PARAMS onto CLASS MEMBERS.
+        // To make the **ASSIGNMENTS**
+        // from PARAMS onto CLASS MEMBERS.
         // Yeesh.
         this.email = emailPassedIn;
         this.id = idPassedIn;
@@ -104,7 +105,7 @@ User { token: null }
     private readonly _token;
     private readonly _tokenExpirationDate;
 
-
+// Ignore these next 2 lines
     mailing; // testing var declaration a la primitive-issimo. okay.
     mailingString: string; // testing var declaration a la primitive but Typed mode. okay.
 

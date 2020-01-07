@@ -75,6 +75,7 @@ export class AuthComponent implements OnInit {
             // you shouldn't get in here... but just in case
             return; // << tsk, tsk, monsieur Le Hacker!
         }
+
         this.isLoading = true;
 
         console.log('formIGot.value ', formIGot.value);
@@ -154,16 +155,49 @@ export class AuthComponent implements OnInit {
 
         if (this.nowAmReady) {
             // 02, part 2
+            // After either Signup OR Login, we here .subscribe()
+            /* .subscribe() EXECUTES!
+
+            https://angular.io/guide/observables#subscribing
+
+            Hmm. I'd had impression that .subscribe()
+            sort of "set up" things, such that only
+            LATER would some invocation of ".next()"
+            actually TRIGGER something happening.
+
+            But, hmm, here I see how actually immediately
+            upon that subscribing, we (apparently) also
+            immediately get back what either
+            AuthService.login() or AuthService.signup()
+            are sending (<AuthResponseData>).
+            That is, this Observable's .next() is
+            immediately tickled/invoked - I do not
+            have to go explicitly invoke
+            myAuthObservable.next(). Hmm.
+
+            FOR COMPARISON:
+            HeaderComponent.ngOnInit()
+            Yes, here too the .subscribe() immediately runs its .next():
+            // "Tersest, bestest:"
+    this.myAuthUserSub = this.myAuthService.userSubject$
+    .subscribe(userWeGot => this.isAuthenticated = !!userWeGot);
+
+             */
             this.myAuthObservable.subscribe(
                 (whatIGot) => {
                     console.log('whatIGot ', whatIGot); // yes
-                    /*
+                    /* N.B. This is just "AuthResponseData" - NOT a User (object)
+But it is plenty for us to know we are good to simply (below) navigate to /recipes etc.
+
+whatIGot: AuthResponseData
+--------------------------
 kind: "identitytoolkit#SignupNewUserResponse"
-idToken: "eyJhbGc..Jd558z37Q-qjNqLXhU"
-email: "norby@pinko8.com"
+idToken: "eyJhbGc..Jd558z37Q-qjNqLXhU" << yes on User
+email: "norby@pinko8.com" << yes on User
 refreshToken: "AEu4..."
-expiresIn: "3600"
-localId: "LdfKHjIaVldC1WkNWhMOz2xe8e83"
+expiresIn: "3600" << sort of yes on User ~ sort of - but on User it is a Date object
+localId: "LdfKHjIaVldC1WkNWhMOz2xe8e83"  << yes on User
+--------------------------
                      */
                     this.isLoading = false;
                     // TIME TO NAVIGUESS! ;o)
@@ -186,7 +220,7 @@ localId: "LdfKHjIaVldC1WkNWhMOz2xe8e83"
                                 HttpErrorResponse {headers: HttpHeaders, status: 401, statusText: "Unauthorized", url: ...
                                  */
                             });
-                }, // /.subscribe() "next"
+                }, // /.subscribe()'s ".next()"
                 (errIGot) => {
                     console.error('errIGot ', errIGot);
                     // this.errorToDisplay = errIGot.error.error.message; // moved to Service
@@ -199,8 +233,8 @@ localId: "LdfKHjIaVldC1WkNWhMOz2xe8e83"
                     << However, we did put the kabosh on it. No funny double-quotes, thank you.
                      */
                     this.isLoading = false;
-                } // /.subscribe() "error"
-            );
+                } // /.subscribe()'s ".error()"
+            ); // /.subscribe() itself
         }
 
         // After either Signup OR Login,

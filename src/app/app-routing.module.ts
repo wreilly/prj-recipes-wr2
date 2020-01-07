@@ -26,7 +26,7 @@ const appRoutes: Routes = [
   { path: '', redirectTo: '/recipes', pathMatch: 'full' },
   { path: 'recipes', component: RecipesComponent, children: [
     { path: '', component: RecipeStartComponent },
-    { path: 'new', component: RecipeEditComponent },
+    { path: 'new', component: RecipeEditComponent, resolve: [RecipesResolverService] },
     { path: ':id', component: RecipeDetailComponent, resolve: [RecipesResolverService] },
     { path: ':id/edit', component: RecipeEditComponent, resolve: [RecipesResolverService] },
   ] }, // << NOPE. Max code does NOT have "resolver" on the RecipesComponent per se. NO >> , resolve: [RecipesResolverService] },

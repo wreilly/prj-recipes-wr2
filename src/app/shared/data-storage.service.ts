@@ -63,7 +63,8 @@ No.
 
     // fetchRecipes(): void {
     fetchRecipes(): Observable<Recipe[]> {
-        // >> NOPE. Tried it. Nope. >> N.B. Now returns just void, because We also now do .subscribe() here no longer off HeaderComponent y not
+        // >> NOPE. Tried it. Nope. >> N.B. Now returns just void,
+        // because We also now do .subscribe() here no longer off HeaderComponent y not
 
         /*
        Note re: .subscribe()
@@ -73,6 +74,10 @@ No.
        Instead, for "fetching," let the calling Component/Etc. do the .subscribe()
        Let the caller get back an Observable<Recipe[]>
        This is needed by the RecipesResolverService for example.
+
+       Hmm, what about HeaderComponent? MAX code has it do its own .subscribe(). Okay
+       Whereas the MAX RecipesResolverService does NOT do its own .subscribe(). Hmm.
+
         */
 
 
@@ -81,13 +86,45 @@ No.
         // Let DataStorageService just fetch/store.
 
 
-        return this.myHttp.get<Recipe[]>(
+        return this.myHttp.get<Recipe[]>( // << ??
+            /* Q. Hmm, does above return an Array of Recipes simply, or
+            actually (somehow?) an OBSERVABLE of <Recipe[]> ?
+             */
+            /* A. Well, interestingly, both are sort of happening here.
+            1) the http.get line does return JUST a plain array of Recipe[]
+            2) but the higher-up fetchRecipes() method ultimately returns an OBSERVABLE<Recipe[]>
+
+            How/why is that?
+            MBU: The plain array of Recipe[] off the http.get
+            is "returned", in first sense, in sense of passing it DOWN/BELOW/ON to the
+            .pipe() and its operators within (map(), tap()).
+
+            Pipe and map and tap all do 'RXJS' stuff, and they all
+            take in an OBSERVABLE and return an OBSERVABLE.
+
+            So, the plain Recipe[] magically/rxjs-ically goes in as an
+            Observable<Recipe[]> to .pipe, on to map(), on to tap(),
+            and what finally comes out of all that is yes an Observable<Recipe[]>.
+
+            That final Observable<Recipe[]> is what the http.get line then
+            'returns', in second/final sense, UP/BACK/TO the
+            highest-level method fetchRecipes(),
+            which in turn returns this Observable<Recipe[]> back to the
+            calling Component/Resolver whatever.
+
+            Note:
+            - HeaderComponent needed to call fetchRecipes().subscribe()
+            - RecipesResolverService does not. just fetchRecipes() is enough.
+              - Why? Because for Resolver, Angular does the .subscribe() for you. Cheers.
+
+             */
+
             // << N.B. before .subscribe() here, this line had 'return'
             // No longer .subscribe() here, so the 'return is restored (above)
             'https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json')
             .pipe(
                 map(
-                    recipesFetched => {
+                    (recipesFetched: Recipe[]) => {
                         return recipesFetched.map(
                             eachRecipe => {
                                 return {
@@ -97,8 +134,11 @@ No.
                             }); // /.map() (Array map)
                     }), // /map() (RXJS map)
                 tap(
-                    newArrayRecipesWithAtLeastEmptyIngredientsWeGot => {
+                    (newArrayRecipesWithAtLeastEmptyIngredientsWeGot: Recipe[]) => {
+
                         this.myRecipeService.setRecipes(newArrayRecipesWithAtLeastEmptyIngredientsWeGot);
+
+                        // MBU: Use of tap() has implicit 'return'
                     }
                 ) // /tap()
             ); // /.pipe()
@@ -428,21 +468,35 @@ Trying "my way" to add Token to the Request.
         /*
         Note re: .subscribe()
         - Here on storeRecipes(), we do the .subscribe().
-        What comes back is kinda benign, etc., on "storing"
+        What comes back (simple "ACK") is kinda benign, etc., upon "storing"
         - Whereas on fetchRecipes(), we do NOT do the .subscribe() here.
         Instead, for "fetching," let the calling Component/Etc. do the .subscribe()
         Let the caller get back an Observable<Recipe[]>
-        This is needed by the RecipesResolverService for example.
+        That is what is needed by the RecipesResolverService for example.
          */
 
         const recipesToStore: Recipe[] = this.myRecipeService.getRecipes();
 
-        // Yeah! Worked great. Cheers.
         if (recipesToStore.length === 0) {
             // Oops we prob don't want to send 0 Recipes back to Firebase. No.
+            // Q. Why (not)? A. Because that would OVERWRITE all Recipes on Firebase. (boo-hoo)
+            // Prolly not what you want.
+            /*
+            One further comment re: this if() test:
+            Scenario:
+            - User upon login has 0 Recipes.
+            - User needs to "Fetch Data" to get Recipes (from Firebase)
+            - If instead user ran our "Send Data" first, with 0 Recipes, before fetching, THAT is scenario we are guarding against, here:
+            Overwriting all Recipes on Firebase by sending 0 Recipes. Cheers.
+
+            In other words, Firebase is Too Stupid, a.k.a.
+            you can Shoot Yourself in the Foot if not careful.
+            Cheers.
+             */
             alert('We are not going to let you ZERO OUT your Firebase Database. Solly!');
             return;
         }
+
         return this.myHttp.put(
                         'https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json',
                         recipesToStore,

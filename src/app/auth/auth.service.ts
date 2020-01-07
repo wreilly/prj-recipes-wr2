@@ -23,7 +23,8 @@ export interface AuthResponseData {
 export class AuthService {
 
     // NEEDS TO BE BEHAVIOR SUBJECT!! :o)
-    // userSubject$ = new Subject<User>();
+    // Q. Why? A. To obtain that initial value *immediately*
+    // userSubject$ = new Subject<User>(); // << Nope.
     userSubject$ = new BehaviorSubject<User>(undefined); // must initialize. null'll do.  (Hmm, undefined ? yep it's okay too)
 
 
@@ -34,6 +35,7 @@ export class AuthService {
     _tokenExpirationDate: Date,
 */
 
+    private myTimeoutId: number; // for autoLogOut()
 
     constructor(
         private myHttpClient: HttpClient,
@@ -117,8 +119,15 @@ expiresIn: "3600"
             ); // /.pipe()
     } // /login()
 
-    autoLogIn() {
+    autoLogIn() { // Called at start: AppComponent - so, any browser reload any point in site comes through here ... (am purty sure)
+
         // Check LOCALSTORAGE for myUserData! If so, then we're good to go! (who knew?)
+
+        if (localStorage.getItem('myUserData') === null) {
+            console.log('No myUserData in localStorage!');
+            return;
+        }
+
         if (localStorage.getItem('myUserData') !== null) {
             const heyWeAreLoggedInUserDataString: string = localStorage.getItem('myUserData');
             console.log('heyWeAreLoggedInUserDataString ', heyWeAreLoggedInUserDataString);
@@ -128,7 +137,13 @@ expiresIn: "3600"
     _token: "eyJhbG...CNywVQ"
     _tokenExpirationDate: "2020-01-05T14:39:34.039Z"
              */
-            const loggedInUserObjectNow: { // Let's explicitly show the Type we get,
+            const loggedInUserObjectLiteral: {
+                /* N.B. Object literal, obtained via JSON.parse()
+                The "date" here is still just a string.
+                (We make to a Date further below, when we new User() a real User Object, vs. this sort of interim Object literal. cheers.
+                */
+
+                // Let's explicitly show the Type we get,
                 // once we "JSON.parse()" the string that we got back out of localStorage:
                 email: string;
                 id: string;
@@ -142,32 +157,41 @@ expiresIn: "3600"
       we'll just do our own new User() right here (below)
 
             this.handleAuthentication(
-                loggedInUserObjectNow.email,
-                loggedInUserObjectNow.id,
-                loggedInUserObjectNow._token,
-                new Date(loggedInUserObjectNow._tokenExpirationDate)
+                loggedInUserObjectLiteral.email,
+                loggedInUserObjectLiteral.id,
+                loggedInUserObjectLiteral._token,
+                new Date(loggedInUserObjectLiteral._tokenExpirationDate)
             );
 */
 
             const thisHereAutoLogInUser = new User(
-                loggedInUserObjectNow.email,
-                loggedInUserObjectNow.id,
-                loggedInUserObjectNow._token,
-                new Date(loggedInUserObjectNow._tokenExpirationDate)
+                loggedInUserObjectLiteral.email,
+                loggedInUserObjectLiteral.id,
+                loggedInUserObjectLiteral._token,
+                new Date(loggedInUserObjectLiteral._tokenExpirationDate)
             );
 
             if (thisHereAutoLogInUser.token) {
                 /*
-                The .token GETTER tells us whether the localStorage User
-                still has valid ("live") token or not
-                If still good (within 3,600 seconds = 1 hour),
+                Now that we've got a real User object, we get the .token GETTER. Cheers.
+                And, we (below) use the result from that .token GETTER,
+                to simply determine whether the token that the localStorage
+                 User has is still valid ("live") or not
+                If still good (not older than 3,600 seconds = 1 hour),
                 then we are good to go.
                 If token is too old, user will NOT get AutoLogIn and has to
                 do regular Log In.
 
-                I guess question I have is: hmm, if say 56 minutes were gone on that hour,
+                Q. I guess question I have is: hmm, if say 56 minutes
+                were gone on that hour,
                 does this AutoLogin only then last you say 4 minutes more ????
-                We save the exact same User data back in to localStorage,
+                A. Thass right. We measure how much time left.
+                Will be less than 60, but needs to still be positive number
+                if User is going to be "Auto-Logged(Back)-In".
+                (Were it negative number, that means it's over 60 minutes
+                 old and INVALID. Cheers.
+
+                Hmm: We save the exact same User data back in to localStorage,
                 including that TokenExpiration if I am not mistaken. Hmmmmmmm.
                  */
                 this.userSubject$.next(thisHereAutoLogInUser);
@@ -183,27 +207,104 @@ expiresIn: "3600"
     _tokenExpirationDate: "2020-01-05T14:39:34.039Z"
     --------------
                  */
+
+                // AUTOLOGOUT Setup:
+                // Set that hour-long time going...
+                /*
+                Bit more involved here in AutoLogIn (vs. user manual LogIn),
+                 to get the correct "expiresIn" number figure:
+
+                "Here's the deal" -
+
+                From localStorage, we got as a String,
+                the _tokenExpirationDate: string;
+                e.g. "2020-01-06T12:53:34.039Z"
+
+                That value we then used in new Date() to
+                get a real Date object for our new User():
+                thisHereAutoLogInUser._tokenExpirationDate
+
+                So, that has a Date(time) for token expiration. Great.
+
+                We now need a number of seconds (milliseconds)
+                from, well, *now* to then, that date/time of token expiration.
+
+                Arithmetic:
+                The "then" of token expiration (presumably later) - now = some positive number
+                (The .getTime() gives you back milliseconds, btw.)
+                 */
+                let expirationDurationFromLocalStorageFigure: number;
+                expirationDurationFromLocalStorageFigure = new Date(loggedInUserObjectLiteral._tokenExpirationDate)
+                    .getTime() - new Date()
+                    .getTime();
+
+                console.log('01 then ', new Date(loggedInUserObjectLiteral._tokenExpirationDate).getTime());
+
+                console.log('02 now ', new Date().getTime());
+
+                console.log('AutoLogIn - expirationDurationFromLocalStorageFigure ', expirationDurationFromLocalStorageFigure);
+
+                console.log('03 diff? ', new Date(loggedInUserObjectLiteral._tokenExpirationDate)
+                    .getTime() - new Date()
+                    .getTime());
+
+                /*
+01 then  1578336832852
+02 now  1578333486313 ~= 50.048 years since 01/Jan/1970 (Unix Epoch) - Exact-a-mundo!
+
+.getTime(): NOW (06/Jan/2020)
+1578333486313 / 1000 / 60 / 60 / 24 / 365 ~= 50.048 years
+                 ^     ^     ^   ^     ^
+              millis  secs mins hours  days/year
+
+AutoLogIn - expirationDurationFromLocalStorageFigure  3346540
+03 diff?  3346538
+autoLogOut expirationDuration  3346540 ~= 55.8 minutes
+3346538        / 1000 / 60  ~= 55.8 minutes
+                  ^     ^
+                millis  secs
+
+                 */
+
+                this.autoLogOut(
+                    expirationDurationFromLocalStorageFigure
+                    // e.g. 3346540 ~= 55.8 minutes (something less than 60 mins)
+                );
+
             }
-
-
         }
-    }
+    } // /autoLogIn()
 
-    logout() {
+    logOut() {
         this.userSubject$.next(null);
         // Maybe do navigate here too; for now, over on HeaderComponent y not
         this.myRouter.navigate(['/auth'])
-            .then(goodOrBad => console.log(goodOrBad));
+            .then(goodOrBad => console.log(goodOrBad)); // e.g. true
         localStorage.removeItem('myUserData');
-    } // /logout()
+        if (this.myTimeoutId) {
+            clearTimeout(this.myTimeoutId);
+        }
+        this.myTimeoutId = null;
+        // Even if there was no timer, just set to null anyway
+    } // /logOut()
+
+    autoLogOut(expirationDuration: number) { // milliseconds e.g. 3600 * 1000 = one hour
+        console.log('autoLogOut expirationDuration ', expirationDuration); // 3600
+        this.myTimeoutId = setTimeout(
+            () => {
+                this.logOut();
+            },
+            expirationDuration // 3000 << test it for 3 seconds = PASS
+        );
+    }
 
     private handleAuthentication(
-        // I'd first done without typing, but better to do with. Cheers.
+        // I'd first done without *Typing* these incoming params, but better to do with. Cheers.
         email: string,
         userLocalId: string,
         token: string,
-        expiresIn: number, // 3600 << don't forget to '+' passed-in string to numberify!
-    ): void { // << no return. instead uses .next() ...
+        expiresIn: number, // 3600 << don't forget, elsewhere, as you call this method, to '+' passed-in string to numberify!
+    ): void { // << no return. instead uses .next(), on our userSubject$ ...
 
         /*
         We just signed up OR logged in.
@@ -253,7 +354,13 @@ _tokenExpirationDate: "2020-01-05T14:39:34.039Z"
 --------------
              */
 
-        } // /handleAuthentication()
+        // Here upon (non-Auto) regular user LogIn (SignUp too), be sure to set that hour-long timer going for "autoLogOut"...
+        // It'll be for the default (Firebase) 3,600 seconds (an hour)
+        this.autoLogOut(expiresIn * 1000);
+        /* seconds vs milliseconds! 60 * 60 = 3,600 seconds in an hour,
+                        * 1000 milliseconds = 3,600,000 in an hour
+        */
+    } // /handleAuthentication()
 
     private handleError(errInService: HttpErrorResponse): Observable<never> {
         /*

@@ -149,7 +149,8 @@ export class AuthInterceptorService implements HttpInterceptor {
 
                 catchError(this.handleErrorInInterceptor), // << this handleError() is copied here from AuthService
 
-                catchError( // << this catchError WAS on DataStorageService
+                catchError( // << this catchError WAS on DataStorageService.storeRecipes()
+
                     (catchErrorWeGot: HttpErrorResponse): Observable<never> => {
             /*
             rxjs throwError "creates an Observable that never emits any value. Observable<never>
@@ -223,7 +224,10 @@ isTrusted: true
             // btw, JSON biz works well (vs just getting [object Object] on U/I)
         }
 
-        // O.K., we do have an error with these sub-sub-sub properties:
+        // O.K., since we GOT PAST the
+        // "if() { return }" above...
+        // that means we DO have an error with these
+        // sub-sub-sub properties:
         switch (errInInterceptorService.error.error.message) {
             case 'EMAIL_EXISTS': {
                 errorMessageToThrow = 'That e-mail address is already taken';

@@ -40,7 +40,18 @@ export class HeaderComponent implements OnInit, OnDestroy{
         }
     );
 */
+// Tersest, bestest:
     this.myAuthUserSub = this.myAuthService.userSubject$.subscribe(userWeGot => this.isAuthenticated = !!userWeGot);
+    /*
+    See also: WR__ comment re: .subscribe() doing immediate Execution of its .next(),
+    like we see it do here above, also an example seen
+    over in AuthService.myOnSubmit() re:
+    this.myAuthObservable.subscribe(
+                (whatIGot) => {
+                    console.log('whatIGot ', whatIGot);
+
+     https://angular.io/guide/observables#subscribing
+     */
   }
 
   // tslint:disable-next-line:max-line-length
@@ -64,10 +75,20 @@ export class HeaderComponent implements OnInit, OnDestroy{
   }
 
   fetchData() {
-    this.myDataStorageService.fetchRecipes(); // See Comment just below. .subscribe() is in Service instead
-/* Hmm, maybe for consistency ( ? ) I'll move the .subscribe() to the Service, not this calling Component (that doesn't do anything with what's returned anyway).
+    this.myDataStorageService.fetchRecipes().subscribe(); // round and round
+    /* Now this .subscribe() is needed here again, on the calling Component.
+    Hmm. See also how the RecipesResolverService invokes .fetchRecipes().
+    That one does NOT use .subscribe(), but, it DOES have a 'return' on it. Hmm.
+    */
+/*
+    this.myDataStorageService.fetchRecipes(); // WAS
+*/
+    // See Comment just below. .subscribe() is in Service instead
+/* Hmm, maybe for consistency ( ? ) I'll move the .subscribe() to the Service,
+not this calling Component (that doesn't do anything with what's returned anyway).
 So: Also "fire & forget" from here. Cheers.
 
+No Longer:
     this.myDataStorageService.fetchRecipes().subscribe(); // << kinda benign noop .subscribe() cheers
 */
     // 03 Now with Resolver biz we changed data service so yeah now we gotta trigger from here w .subscribe()
@@ -96,7 +117,7 @@ So: Also "fire & forget" from here. Cheers.
   } // /fetchData()
 
   myLogout() {
-    this.myAuthService.logout();
+    this.myAuthService.logOut();
   }
 
   ngOnDestroy(): void {
