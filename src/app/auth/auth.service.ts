@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import {catchError, tap} from 'rxjs/operators';
 import {BehaviorSubject, Observable, Subject, throwError} from 'rxjs'; // No longer Subject; not using ObservableInput
 import {User} from './user.model';
+import { RecipeService } from '../recipes/recipe.service';
 
 export interface AuthResponseData {
     kind: string; // YER WRONG >> << No longer used by Firebase (or us). Was 'identitytoolkit#VerifyPasswordResponse', fwiw.
@@ -40,6 +41,7 @@ export class AuthService {
     constructor(
         private myHttpClient: HttpClient,
         private myRouter: Router,
+        private myRecipeService: RecipeService,
     ) { }
 
     signup(nameRankSerialNumber): Observable<AuthResponseData> { // >> Nah. : ObservableInput<AuthResponseData> {
@@ -286,10 +288,25 @@ autoLogOut expirationDuration  3346540 ~= 55.8 minutes
         }
         this.myTimeoutId = null;
         // Even if there was no timer, just set to null anyway
+
+        /*
+        One more thing to do (not so intuitive):
+        Clear the LOCAL Recipe[].
+        Q. Why?
+        A. So that the user experience is consistent.
+        - necessary@cat.edu logs in, fetches Recipes from Canonical Firebase, good.
+        - Logs out, okay.
+        - Does NOT refresh/reload page/app.
+        - Logs in again - **the Recipes are already there** - from LOCAL.
+        - Possible that those LOCAL are STALE, not up to date, not Canonical ("of record").
+        Improvement: Require/force user to Fetch Recipes anew, upon new LogIn.
+         */
+        this.myRecipeService.setRecipes([]); // << CLEAR/EMPTY the Local Recipe[], upon LogOut.
+
     } // /logOut()
 
     autoLogOut(expirationDuration: number) { // milliseconds e.g. 3600 * 1000 = one hour
-        console.log('autoLogOut expirationDuration ', expirationDuration); // 3600
+        console.log('autoLogOut expirationDuration ', expirationDuration); // 3,600,000 one hour
         this.myTimeoutId = setTimeout(
             () => {
                 this.logOut();

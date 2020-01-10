@@ -1,15 +1,18 @@
-import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
+import {Component, OnInit, ComponentFactoryResolver, ViewChild, OnDestroy} from '@angular/core';
+import {Observable, Subscription} from 'rxjs';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, AuthResponseData } from './auth.service';
+
+import { AlertComponent } from '../shared/alert/alert.component';
+import { PutThingHereDirective } from '../shared/put-thing-here/put-thing-here.directive';
 
 @Component({
     selector: 'app-auth',
     templateUrl: './auth.component.html',
     styleUrls: [],
 })
-export class AuthComponent implements OnInit {
+export class AuthComponent implements OnInit, OnDestroy {
 
     myFormGroup: FormGroup;
     myEmailFormControl: FormControl;
@@ -36,10 +39,21 @@ export class AuthComponent implements OnInit {
 
     isLoggedIn = false;
 
+    @ViewChild(PutThingHereDirective, { static: false }) alertHostPosition: PutThingHereDirective;
+    /*
+The Type "PutThingHereDirective" doesn't do a lot (it is a "Placeholder," recall).
+It simply exposes ('public') a ViewContainerRef. But that is just what we need. Cool.
+     */
+
+    dismissCloseMessageSubscription: Subscription;
+
     constructor(
         private myAuthService: AuthService,
         private myRouter: Router,
+        private myComponentFactoryResolver: ComponentFactoryResolver,
+        // private myPutThingHereDirective: PutThingHereDirective, // << not necessary ?
     ) {
+
 
     }
 
@@ -147,7 +161,7 @@ export class AuthComponent implements OnInit {
                         "Not Found", url: "https://foobarw
                          */
                         // this.errorToDisplay = errIfAny.error.error.message;
-                        this.errorToDisplay = errIfAny; // NOW this is the error message string only = good, what you want.
+                        this.errorToDisplay = errIfAny; // NOW this is the error essage string only = good, what you want.
                         this.isLoading = false;
                     }
                 );
@@ -232,6 +246,14 @@ localId: "LdfKHjIaVldC1WkNWhMOz2xe8e83"  << yes on User
                     But it does put double-quotes around it when we just get back a string. Looks little funny, but, acceptable.
                     << However, we did put the kabosh on it. No funny double-quotes, thank you.
                      */
+
+                    /* *********** LECT 313+ ****
+                    DYNAMIC COMPONENT for Error Modal Dialog
+                    Programmatic etc.
+
+                     */
+                    this.myAuthShowErrorAlert(errIGot);
+
                     this.isLoading = false;
                 } // /.subscribe()'s ".error()"
             ); // /.subscribe() itself
@@ -251,7 +273,59 @@ localId: "LdfKHjIaVldC1WkNWhMOz2xe8e83"  << yes on User
     }
 
     dismissErrorToDisplay() {
+        // Plain Old DOM Element (e.g. <div>)
         this.errorToDisplay = null;
     }
 
+    myAuthDismissError() {
+        // DYNAMIC COMPONENT with *ngIf
+        // (simply calls the above method already in place)
+        // we have this bit of oddity because we have 2 or 3 ways to do same thing in this "classroom learning code"
+        this.dismissErrorToDisplay();
+    }
+
+    private myAuthShowErrorAlert(errorMessagePassedIn) {
+        // DYNAMIC COMPONENT with PROGRAMMATIC Component creation
+        // LECTURE 313
+        /*
+        Q. When (the H___) does this method get called?
+        A. Only when we hit an ERROR upon .subscribing() to the result of
+        doing LogIn or SignUp calls to Firebase. Cheers.
+         */
+        const myAlertCmpFactory = this.myComponentFactoryResolver.resolveComponentFactory(
+            AlertComponent
+        );
+// NOPE        myAlertCmpFactory.create();
+
+        // Just assign the ViewContainerRef we have, to a local variable here:
+        const myViewContainerRefHereInHost = this.alertHostPosition.myPutThingHereDirectiveViewContainerRef;
+        // https://angular.io/api/core/ViewContainerRef#methods
+
+        /*
+        As MAX notes, this ViewContainerRef is not mere "coordinates" of where that container is.
+        It is an Object with methods etc.
+         */
+        myViewContainerRefHereInHost.clear(); // before (re)-using, clear what's there
+
+        const myAlertComponentRef = myViewContainerRefHereInHost.createComponent(myAlertCmpFactory);
+        // This ".createComponent()" takes not a type, but a Factory (to make that type)
+        // And it returns not a Component, but a "Ref"
+        // And that "Ref" in turn has a property to obtain ".instance".
+        // And that .instance gets you to methods and properties on your Component! Cheers.
+
+        myAlertComponentRef.instance.alertMessageErrorToDisplay = errorMessagePassedIn;
+
+        // We'll listen for Close/Dismiss button click on the AlertComponent HTML itself:
+        // N.B. the Angular EventEmitter is basically a SUBJECT Observable, so, we can .subscribe() to it. Cheers.
+        this.dismissCloseMessageSubscription = myAlertComponentRef.instance.myDismissMessageEventEmitter.subscribe(() => {
+            this.dismissCloseMessageSubscription.unsubscribe();
+            myViewContainerRefHereInHost.clear();
+        });
+    }
+
+    ngOnDestroy(): void {
+        if (this.dismissCloseMessageSubscription) { // Test whether we have one! Muy importante.
+            this.dismissCloseMessageSubscription.unsubscribe();
+        }
+    }
 }

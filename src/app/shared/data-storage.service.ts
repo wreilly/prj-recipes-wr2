@@ -469,6 +469,7 @@ Trying "my way" to add Token to the Request.
         Note re: .subscribe()
         - Here on storeRecipes(), we do the .subscribe().
         What comes back (simple "ACK") is kinda benign, etc., upon "storing"
+        e.g. {name: "-LwhEb8qPJct0j7yBgWl"}
         - Whereas on fetchRecipes(), we do NOT do the .subscribe() here.
         Instead, for "fetching," let the calling Component/Etc. do the .subscribe()
         Let the caller get back an Observable<Recipe[]>
@@ -484,10 +485,11 @@ Trying "my way" to add Token to the Request.
             /*
             One further comment re: this if() test:
             Scenario:
-            - User upon login has 0 Recipes.
-            - User needs to "Fetch Data" to get Recipes (from Firebase)
-            - If instead user ran our "Send Data" first, with 0 Recipes, before fetching, THAT is scenario we are guarding against, here:
-            Overwriting all Recipes on Firebase by sending 0 Recipes. Cheers.
+            - User upon login has 0 Recipes, in the app. (There are of course Recipes over on Firebase)
+            - User needs to "Fetch Data" to get Recipes into the app (from Firebase)
+            - If instead user ran our "Send Data" first, with 0 Recipes in the app,
+               before fetching, THAT is scenario we are guarding against, here:
+            AVOID: Overwriting all Recipes on Firebase by sending 0 Recipes. Cheers.
 
             In other words, Firebase is Too Stupid, a.k.a.
             you can Shoot Yourself in the Foot if not careful.
@@ -497,7 +499,8 @@ Trying "my way" to add Token to the Request.
             return;
         }
 
-        return this.myHttp.put(
+        this.myHttp.put( // << MAX Code, no 'return'. Hmm.
+        // return this.myHttp.put( // WR__. worked. hmm.
                         'https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json',
                         recipesToStore,
                     ) // /.put()
@@ -507,7 +510,14 @@ Trying "my way" to add Token to the Request.
                                     console.log('whatWeGotSending ', whatWeGotSending);
                                 } // yep: {name: "-LwhEb8qPJct0j7yBgWl"}
                             )
-                            // N.B. I've removed catchError() from here; now on the Interceptor.
+                            // N.B. I've removed the catchError() that I had, from here; now on the Interceptor.
+                            /* << Update note: that catchError() is now "doing nothing"
+                               just passes through the entire HttpErrorResponse it gets. Cheers.
+                             Also note: MAX Code doesn't have any error handling here on DataStorageService.storeRecipes().
+                            (Nor on fetchRecipes(), fwiw.)
+                            MAX Code also does NOT have error handling on AuthInterceptorService, fwiw.
+                            MAX Code DOES have error handling on AuthService.signUp and .logIn.
+                             */
                         ) // /.pipe()
             .subscribe(
                 (whatWeGotSending) => { console.log('whatWeGotSending ', whatWeGotSending); } // yep: {name: "-LwhEb8qPJct0j7yBgWl"}

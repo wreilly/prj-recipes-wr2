@@ -18,7 +18,7 @@ https://www.udemy.com/course/the-complete-guide-to-angular-2/learn/lecture/14466
 
 A. " there has been an undocumented change under the hood in Angular 8."
  */
-// So, we'll put it in even if not absolutely needed:
+// So, we'll put in the "@Injectable()" decorator, even if not absolutely needed:
 @Injectable()
 export class AuthInterceptorService implements HttpInterceptor {
 
@@ -147,9 +147,16 @@ export class AuthInterceptorService implements HttpInterceptor {
                 }
                 ), // /tap()
 
-                catchError(this.handleErrorInInterceptor), // << this handleError() is copied here from AuthService
+/* **** REMOVING catchError() that came from AuthService:
+MAX Code does NOT have it here in Interceptor. I was just testing things out. Cheers.
 
-                catchError( // << this catchError WAS on DataStorageService.storeRecipes()
+                catchError(this.handleErrorInInterceptor), // << this handleError() is copied here from AuthService
+*/
+
+                catchError(
+                    // UPDATE. We can keep this "catchError()" here, but,
+                    // we are simply using it just PASS THROUGH entire HttpErrorResponse object.
+                    // << this catchError WAS on DataStorageService.storeRecipes()
 
                     (catchErrorWeGot: HttpErrorResponse): Observable<never> => {
             /*
@@ -157,7 +164,7 @@ export class AuthInterceptorService implements HttpInterceptor {
             Instead, it errors out immediately using the same error caught by catchError"
             https://blog.angular-university.io/rxjs-error-handling/
              */
-                        console.log('catchErrorWeGot ', catchErrorWeGot);
+                        console.log('catchErrorWeGot in Interceptor HttpErrorResponse: ', catchErrorWeGot);
                         /* Yep on FOOBAR URL:
                         HttpErrorResponse
                         {headers: HttpHeaders, status: 0, statusText: "Unknown Error",
@@ -179,6 +186,8 @@ error: ProgressEvent
 isTrusted: true
                          */
 
+/* REMOVING THIS LOGIC from CATCHERROR() on INTERCEPTOR
+
                         if (catchErrorWeGot.error instanceof ErrorEvent) {
                             // A client-side or network error occurred. Handle it accordingly.
                             console.error('An error occurred:', catchErrorWeGot.error.message);
@@ -188,12 +197,19 @@ isTrusted: true
                             console.error(
                                 `Backend returned status code ${catchErrorWeGot.status}, ` +
                                 `body (error) was: ${ JSON.stringify(catchErrorWeGot.error) }`);
-                            /*
+                            /!*
                             ...code 0, body was: {"isTrusted":true}
-                             */
+                             *!/
                         }
+*/
+
                         // return an observable (Observable<never>), with a user-facing error message
+/* REMOVING THIS FROM CATCHERROR() on INTERCEPTOR:
                         return throwError('Oops Send Data');
+*/
+                        return throwError(catchErrorWeGot);
+                        // simply passing through entire HttpErrorResponse object.
+                        // (Q. Does that work?) (A. Yes.)
                     }
                 ) // /catchError()
 
@@ -201,7 +217,9 @@ isTrusted: true
             ); // /.pipe()
     } // /intercept()
 
+
     private handleErrorInInterceptor(errInInterceptorService: HttpErrorResponse): Observable<never> {
+        // << REMOVING. NO LONGER CALLED. OKAY.
         /*
         For Heck Of It
         I have copied the 'handleError()' from AuthService here into the Interceptor.

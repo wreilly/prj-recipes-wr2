@@ -118,6 +118,9 @@ export class RecipeService {
     the recipes[] over on the
     Component gets updated. Kids.
      */
+
+    // N.B. This is called upon LogOut (by AuthService) to CLEAR the Local Recipe[]. Cheers.
+
     this.recipesOnServiceChangedSubject.next(this.recipes.slice());
   }
 

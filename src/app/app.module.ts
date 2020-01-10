@@ -29,7 +29,10 @@ import { LoadingSpinnerComponent } from './shared/loading-spinner/loading-spinne
 
 // Ye Olde Barrel (of Interceptors)
 // Nah: import { AuthInterceptorService } from './http-interceptors/auth-interceptor.service';
-import { HttpInterceptorsMyConst } from './http-interceptors/index';
+import { HttpInterceptorsMyConst } from './http-interceptors'; // dont' need '/index.ts' apparently. Okay.
+
+import { AlertComponent } from './shared/alert/alert.component';
+import { PutThingHereDirective } from './shared/put-thing-here/put-thing-here.directive';
 
 @NgModule({
   declarations: [
@@ -46,6 +49,8 @@ import { HttpInterceptorsMyConst } from './http-interceptors/index';
     RecipeEditComponent,
     AuthComponent,
     LoadingSpinnerComponent,
+    AlertComponent,
+    PutThingHereDirective,
   ],
   imports: [
     BrowserModule,
@@ -58,6 +63,9 @@ import { HttpInterceptorsMyConst } from './http-interceptors/index';
     ShoppingListService,
     RecipeService,
     HttpInterceptorsMyConst,
+  ],
+  entryComponents: [
+      AlertComponent,
   ],
   // WR__ test editing added RecipeService.
   // yes, needs to be here at root, not up/over in a Shopping component...

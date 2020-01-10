@@ -1,6 +1,6 @@
 import {ActivatedRouteSnapshot, CanActivate, RouterStateSnapshot, UrlTree, Router} from '@angular/router';
 import {Observable} from 'rxjs';
-import {map, tap} from 'rxjs/operators';
+import {map, tap, take} from 'rxjs/operators';
 import {Injectable} from '@angular/core';
 
 import {AuthService} from './auth.service';
@@ -23,6 +23,7 @@ export class AuthGuard implements CanActivate {
     ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
         return this.myAuthService.userSubject$
             .pipe(
+                take(1), // avoid re-running, keeping live subscription. Just one value, pls.
                 map(
                     (userWeGot: User) => {
                         // return !!userWeGot;

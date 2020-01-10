@@ -1,10 +1,132 @@
 <div class="row">
     <div class="col-xs-12 col-md-6 col-md-offset-3">
 <!--        https://stackoverflow.com/questions/38500828/whats-exactly-the-purpose-of-col-md-offset-->
+
+        <!-- ERROR in Plain Old DOM Element e.g. <div> -->
+<!--
         <div class="alert alert-danger" *ngIf="errorToDisplay">
-            <p>{{ errorToDisplay }}</p>
+            <p>PLAIN OLD DOM ELEMENT errorToDisplay {{ errorToDisplay }}</p>
             <button class="alert" on-click="dismissErrorToDisplay()">Dismiss</button>
         </div>
+-->
+
+        <!-- ALERT FOR ERROR, in DYNAMIC COMPONENT with *ngIf -->
+        <!-- *** SEE HTML for EXAMPLE & ANNOTATIONS on how this is used.
+                  src/app/shared/alert/alert.component.html
+        -->
+<!--
+        <app-alert
+                *ngIf="errorToDisplay"
+                bind-alertMessageErrorToDisplay="errorToDisplay"
+                on-myDismissMessageEventEmitter="myAuthDismissError()"
+        ><p>***NOT SEEN*** text not seen on U/I. Cheers. >> App-AlertComponent. Here is AuthComponent's errorToDisplay {{ errorToDisplay }} << ***NOT SEEN***</p></app-alert>
+-->
+
+        <hr />
+        <!-- ERROR in PROGRAMMATIC IMPERATIVE COMPONENT  -->
+        <div ref-addErrorThingHere> <!-- << NOT USING -->
+            <!-- Note: You might think, add a reference (like above), and
+            you might think to use @ViewChild() to obtain access to that reference ... But, that is not what is needed here
+            Lect. 312 ~05:06
+            Instead we use a ViewContainerRef ( whoa ) ... tlicky!  See below:
+            -->
+        </div>
+        <hr />
+<!--
+        <ng-template appPutThingHereDirective>Q. hmm ng-template ?? do we see text inside ng-template? doubt it << A. NO</ng-template>
+-->
+<!--
+        <ng-container appPutThingHereDirective>Q. hmm ng-container ??? do we see text inside ng-container? hope so << A. Yeah</ng-container>
+-->
+        <ng-container appPutThingHereDirective><p style="color: darkred">Q. hmm ng-container&lt;p> ??? do we see text inside ng-container>&lt;p>? hope so << A. Yeah</p></ng-container>
+        <!--
+        Q. Can you tell, just looking at this HTML template biz, just WHAT is
+        going in here at this "PutThingHereDirective"?
+        A. No. No you cannot. You gotta go read the TypeScript to see WHAT (the hell)
+        got done re:
+        1) Component Factory to gin up an AlertComponent into something we can use here
+        2) The ViewContainerRef, @ViewChilde() biz, and Host Element etc. where that Component is then "put"/placed
+        Cheers.
+        -->
+        <!-- O la. purty complex. In terms of what is rendered, etc.
+        Above 3 lines:
+        Okay, with ng-template for our Directive, NO text within <ng-template>text here?</ng-template> gets rendered. Okay, that's fine.
+        With ng-container, you DO get any text (or <p> etc.) within, rendered. Okay.
+        And yeah BOTH can successfully host the Directive, which does its job of dynamically bringing in
+        the modal dialog AlertComponent.
+        But do note that the ng-container text <p> etc. within, is NOT made part of the Directive component content
+        (I'm sure you already knew that),
+        AND that the ng-container text <p> etc. is NOT rendered conditionally upon same conditions as the Directive.
+        No. The ng-container text <p> here is just rendered immediately (again, okay, you knew that). It is NOT the
+        case that it only gets rendered at same time/condition that the Directive is made to appear. No.
+        Cheers.
+        -->
+
+        <!--        Interestingly, ng-template, which of course
+  "does-not-make-up-part-of-DOM",
+  can be placed in the template file up above the parent <div> if you want; we'll do that bit later.
+
+This point in the DOM is "simply remembered internally by Angular"
+We can get access to it in the .TS via @ViewChild()
+You pass a *selector* to @ViewChild()
+Instead of a string as a local reference ...
+we will pass in a *type* - @ViewChild() will "look for the
+*first* existence of that type in the template" - who knew.
+type is the appPutThingHereDirective Directive
+-->
+        <!-- More on *ngIf and Structural Directives: (DESUGAR asterisk *ngIf etc.)
+        https://angular.io/guide/structural-directives#microsyntax-examples
+        https://www.freecodecamp.org/news/everything-you-need-to-know-about-ng-template-ng-content-ng-container-and-ngtemplateoutlet-4b7b51223691/
+        https://angular.io/guide/structural-directives
+        https://angular.io/guide/structural-directives#ng-container-to-the-rescue
+
+*ngIf="exp" when de-sugared is:	<ng-template [ngIf]="exp">
+        -->
+        <div *ngIf="true">div *ngIf show 'cuz it's true</div>
+        <ng-template bind-ngIf="true">ng-template bind-ngIf show 'cuz it's true</ng-template>
+        <ng-template bind-ngIf="true"><p style="color: #2102cf">ng-template bind-ngIf show MY &lt;p> 'cuz it's true</p></ng-template>
+
+
+<!--  NOTES on HTML FROM DEV TOOLS for *ngIf etc. =========================
+        <div class="col-xs-12 col-md-6 col-md-offset-3">
+
+            <hr>
+
+            <div></div> // << O.K. My "ref-addErrorThingHere" otherwise empty div
+
+            <hr>
+
+            &lt;!&ndash;&ndash;&gt; // << O.K. My <ng-template appPutThingHereDirective> correctly not rendered. No use of *ngIf
+
+            &lt;!&ndash;bindings={
+              "ng-reflect-ng-if": "true"
+            }&ndash;&gt;
+            <div>div *ngIf show 'cuz it's true</div> << O.K. My <div *ngIf...> correctly rendered
+
+                &lt;!&ndash;bindings={
+                  "ng-reflect-ng-if": "true"
+                }&ndash;&gt;
+                ng-template bind-ngIf show 'cuz it's true // << O.K. My <ng-template bind-ngIf...> correctly rendered
+
+                    &lt;!&ndash;bindings={
+                      "ng-reflect-ng-if": "true"
+                    }&ndash;&gt;
+                    <p style="color: #2102cf">ng-template bind-ngIf show MY &lt;p&gt; 'cuz it's true</p>  // << O.K. My <ng-template bind-ngIf...><p> correctly rendered
+
+                        &lt;!&ndash;bindings={
+                          "ng-reflect-ng-if": "false" // << O.K. My <div *ngIf="isLoading"> correctly NOT rendered
+                        }&ndash;&gt;
+
+                        &lt;!&ndash;bindings={
+                          "ng-reflect-ng-if": "true" // << O.K. My <form *ngIf="isLoading"> correctly IS rendered
+                        }&ndash;&gt;
+                        <form novalidate="" ng-reflect-form="[object Object]" ...></form>
+            </div>
+            ==============================
+-->
+
+
+
         <div *ngIf="isLoading">
             <h1>S-P-I-I-I-N-N-E-R</h1>
             <app-loading-spinner></app-loading-spinner>

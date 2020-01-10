@@ -15,6 +15,7 @@ export class HeaderComponent implements OnInit, OnDestroy{
   isAuthenticated = false;
   myAuthUserSub: Subscription;
   // myHttp = new HttpClient(); // << Nope
+  userEmailToDisplay: string;
 
   constructor(
       private myDataStorageService: DataStorageService,
@@ -41,7 +42,13 @@ export class HeaderComponent implements OnInit, OnDestroy{
     );
 */
 // Tersest, bestest:
-    this.myAuthUserSub = this.myAuthService.userSubject$.subscribe(userWeGot => this.isAuthenticated = !!userWeGot);
+    this.myAuthUserSub = this.myAuthService.userSubject$.subscribe(userWeGot => {
+      console.log(userWeGot);
+      this.isAuthenticated = !!userWeGot;
+      if (userWeGot) {
+        this.userEmailToDisplay = userWeGot.email;
+      }
+    });
     /*
     See also: WR__ comment re: .subscribe() doing immediate Execution of its .next(),
     like we see it do here above, also an example seen
@@ -68,6 +75,7 @@ export class HeaderComponent implements OnInit, OnDestroy{
 
   sendData() {
     this.myDataStorageService.storeRecipes(); // fire & forget
+    // Update: storeRecipes() on Service has no 'return' in MAX Code. Hmm.
     /* N.B. storeRecipes() "returns" a Subscription, but the called method does
     its own .subscribe() over in that Service,
     so from this vantage (calling Component), nothing "comes back". MBU.

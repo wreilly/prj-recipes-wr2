@@ -1,0 +1,40 @@
+<div class="my-backdrop"
+     on-click="myAlertDismissMessage()">
+    <p>Alert My Backdrop ? (yes is visible if hard to see/read)</p>
+    <p style="color: navajowhite;">Alert My Backdrop NavajoWhite (line above is visible but hard to read; default font color)</p>
+</div>
+<div class="my-alert-box">
+    <p>APP-ALERT-COMPONENT alertMessageErrorToDisplay: {{ alertMessageErrorToDisplay }}</p>
+    <div class="my-alert-box-actions">
+        <button class="btn btn-primary" type="button"
+                on-click="myAlertDismissMessage()">Close/Dismiss!</button>
+    </div>
+</div>
+
+<!--  PASTING IN HERE EXAMPLE
+      of WHERE this AlertComponent
+      GETS USED (over in AuthComponent)
+
+/src/app/auth/auth.component.html
+---------------------------------
+<\!-- ALERT FOR ERROR, in DYNAMIC COMPONENT with *ngIf -\->
+<app-alert
+        *ngIf="errorToDisplay"
+        // << *** SHOW/DISPLAY *** TO KNOW WHEN TO MAKE ALERT APPEAR: CONDITION ...
+         'errorToDisplay' is a property on "host" AuthComponent (e.g. 'Wrong password' << truth-y)
+
+        bind-alertMessageErrorToDisplay="errorToDisplay"
+        // << *** DATA *** WHAT DATA TO SHOW IN ALERT:
+        Above AuthComponent property 'errorToDisplay' is bound onto @Input() property 'alertMessageErrorToDisplay' on AlertComponent
+
+        on-myDismissMessageEventEmitter="myAuthDismissError()"
+        // << *** HIDE/CLOSE *** TO KNOW WHEN TO CLOSE ALERT:
+        Host AuthComponent sets listener for the EventEmitter from the AlertComponent.
+        // Then run the AuthComponent method to in fact set the 'errorToDisplay' to null.
+        // That null of course in turn alters the above CONDITION to false-y, and the AlertComponent is hidden/closed
+>
+  <p>***N.B. NOT SEEN*** text is not seen on U/I. Cheers. >> fwiw - App-AlertComponent. Here is AuthComponent's errorToDisplay {{ errorToDisplay }} << ***NOT SEEN***</p>
+</app-alert>
+---------------------------------
+
+-->
