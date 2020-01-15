@@ -173,6 +173,16 @@ expiresIn: "3600"
                 new Date(loggedInUserObjectLiteral._tokenExpirationDate)
             );
 
+            console.log('thisHereAutoLogInUser ', thisHereAutoLogInUser);
+            /*
+            Good. I have test situation here where:
+             There IS localStorage user,
+             but,
+             The token is EXPIRED (12/Jan/20 - today is 13/Jan/20).
+            Bueno.
+            We are Not Logged In (correct-a-mundo)
+             */
+
             if (thisHereAutoLogInUser.token) {
                 /*
                 Now that we've got a real User object, we get the .token GETTER. Cheers.
@@ -197,6 +207,7 @@ expiresIn: "3600"
                 including that TokenExpiration if I am not mistaken. Hmmmmmmm.
                  */
                 this.userSubject$.next(thisHereAutoLogInUser);
+
                 localStorage.setItem('myUserData', JSON.stringify(thisHereAutoLogInUser));
                 /*
                 LOCALSTORAGE

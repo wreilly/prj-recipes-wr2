@@ -15,13 +15,34 @@
 <div class="row">
   <div class="col-xs-12">
     <div
-      class="btn-group"
+      class="dropdown"
       appDropdown>
+<!-- MAX Code has: -->
+      <div
+              class="btn-group"
+              appDropdown>
+<!--
+(Q. Missing 'dropdown' in class attribute, I think!?)
+(A. Actually, Not class stuff.
+Instead, has to do with Directive out of scope of current Angular module
+(RecipesModule). Need for our SharedModule!! Cheers.)
+-->
+      <!-- Inspired by (working!) HeaderComponent.html code!
+      <a
+              style="cursor: pointer"
+              class="dropdown-toggle"
+              role="button"
+      >
+        Manage RecipeA <span class="caret"></span>
+      </a>
+      -->
+<!-- A la MAX Code: hmmm... -->
       <button
         type="button"
         class="btn btn-primary dropdown-toggle">
         Manage Recipe <span class="caret"></span>
       </button>
+<!-- -->
       <ul class="dropdown-menu">
         <li><a (click)="onAddToShoppingList()" style="cursor: pointer;">To Shopping List</a></li>
         <li><a style="cursor: pointer;" (click)="onEditRecipe()">Edit Recipe</a></li>

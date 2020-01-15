@@ -38,6 +38,23 @@ owing to this total fetch, you re-get/fetch what is on backend and you don't hav
         if (recipesWeMayHaveLocal.length === 0) {
             // t'ain't none here! Let's go fetch
             // Therefore it's okay to carte blanche go get Recipes from Firebase...
+
+            /* Q. Hmm. What exactly is this Recipes Resolver doing for us?
+            Scenario:
+            - User logs in, fetches data (Recipes)
+            - Navigates to one Recipe /:id   recipes/0
+            - Hits browser Reload/Refresh page
+            - App reloads overall, and recipes[] is again to empty []
+            - So, the Resolver will wind up here, inside if (recipesWeMayHaveLocal.length === 0)
+            - And, so the App will go back out to Firebase, get data
+            - I am missing something here ...
+
+            Maybe I need to come back when EDIT is working again
+            /:id/edit  recipes/0/edit
+            (not working now, i'm right in middle of refactoring modules
+            DropDownDirective not available, so Edit not available)
+             */
+
             return this.myDataStorageService.fetchRecipes(); // << We do not need .subscribe() here (in an Angular "Resolver"). Read on...
             // Above line returns OBSERVABLE<Recipe[]> << I think ??
             /*

@@ -43,9 +43,10 @@ export class HeaderComponent implements OnInit, OnDestroy{
 */
 // Tersest, bestest:
     this.myAuthUserSub = this.myAuthService.userSubject$.subscribe(userWeGot => {
-      console.log(userWeGot);
+      // console.log(userWeGot); // hmm, hitting undefined (when not logged in, but do have localStorage user. hmm)
       this.isAuthenticated = !!userWeGot;
       if (userWeGot) {
+        console.log('userWeGot ', userWeGot);
         this.userEmailToDisplay = userWeGot.email;
       }
     });
