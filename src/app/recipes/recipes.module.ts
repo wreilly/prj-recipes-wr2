@@ -8,7 +8,9 @@ Because the Components herein use these pieces (routing, *ngIf, forms etc).
 Note that the Service (RecipeService) remains in the root AppModule.
  */
 import { RouterModule } from '@angular/router'; // RecipesComponent has <router-outlet>
-import { CommonModule } from '@angular/common'; // Subset of BrowserModule; for *ngIf etc.
+/*
+import { CommonModule } from '@angular/common'; // Subset of BrowserModule; for *ngIf etc. // << Now from SharedModule
+*/
 import { ReactiveFormsModule } from '@angular/forms'; // RecipesEdit has Forms
 
 import { SharedModule } from '../shared/shared.module';
@@ -79,7 +81,9 @@ LOOKS LIKE :o/
         RouterModule, // << seems to have worked, too << YES this is what we want
         // RouterModule.forChild(),
         // << you'd do this ".forChild()" here only if you did NOT create a RecipesRoutingModule separately. but we do, so, no line here
-        CommonModule,
+/*
+        CommonModule, // << Now from SharedModule
+*/
         ReactiveFormsModule,
         RecipesRoutingModule, // << yep, here is where RecipesModule imports that RecipesRoutingModule. Good.
         /*
@@ -100,7 +104,9 @@ That was prior to my having the SharedModule etc. Cheers.
         I must be missing something ...
          */
 
-        // Huh, not even RecipesRoutingModule needs to be exported.
+        // Huh, here in the RecipesModule, not even RecipesRoutingModule needs to be exported.
+        // Do note that in the RecipesRoutingModule, YES, that needs to export the RouterModule
+
         /* I guess the Router .forChild() stuff takes care of
         exporting/importing/connecting/supplying/merging the routing info,
         from the "child" RecipesRouting up to the "parent" AppRouting,

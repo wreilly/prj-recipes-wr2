@@ -320,9 +320,28 @@ autoLogOut expirationDuration  3346540 ~= 55.8 minutes
         console.log('autoLogOut expirationDuration ', expirationDuration); // 3,600,000 one hour
         this.myTimeoutId = setTimeout(
             () => {
-                this.logOut();
+
+                /* Lect. 335 Loading Services Differently etc.
+                New wild & crazy idea.
+                || Warn user: About to log out. ||
+
+                Okay, but, it may be I am not handling
+                something about the Auth Token at that point??
+                'message: "Http failure response for https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json?auth=null: 401 Unauthorized"
+error:
+error: "Could not parse auth token."'
+                 */
+
+                const whatTheySaid = confirm('You have been inactive for ' + expirationDuration / 1000 + ' seconds. About to log you out.')
+                if (whatTheySaid) {
+                    this.logOut();
+                } else {
+                    alert('okay, another bloody hour, but that is it, pal.');
+                    this.autoLogOut(3600 * 1000); // another hour // (10000) ten seconds for testing
+                    // actually of course they can re-up for another hour as many times as they like...
+                }
             },
-            expirationDuration // 3000 << test it for 3 seconds = PASS
+            expirationDuration // 10000 << test it for 10 seconds = PASS
         );
     }
 

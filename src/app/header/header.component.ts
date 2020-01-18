@@ -4,6 +4,7 @@ import {Subscription} from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { DataStorageService } from '../shared/data-storage.service';
 import { AuthService } from '../auth/auth.service';
+import { LoggingService } from '../logging.service';
 
 
 @Component({
@@ -21,6 +22,7 @@ export class HeaderComponent implements OnInit, OnDestroy{
       private myDataStorageService: DataStorageService,
       private myHttpClient: HttpClient,
       private myAuthService: AuthService,
+      private myLoggingService: LoggingService,
   ) { }
 
   ngOnInit(): void {
@@ -47,6 +49,15 @@ export class HeaderComponent implements OnInit, OnDestroy{
       this.isAuthenticated = !!userWeGot;
       if (userWeGot) {
         console.log('userWeGot ', userWeGot);
+
+        /*
+        LOGGING SVC
+         */
+        this.myLoggingService.printLog(`HeaderComponent says ${JSON.stringify(userWeGot)} regarding isAuthenticated.`);
+        /* yep:
+        {"email":"necessary@cat.edu","id":"hMv51L1tHof1paEgJe9ZEjUVhH82","_token":" ...
+        */
+
         this.userEmailToDisplay = userWeGot.email;
       }
     });

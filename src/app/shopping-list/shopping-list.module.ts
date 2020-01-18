@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+// import { CommonModule } from '@angular/common'; // << Now comes from SharedModule
+// import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 // I guess in ShoppingList I do use plain old Forms (not Reactive)
 import { Routes, RouterModule } from '@angular/router';
 
@@ -23,7 +24,12 @@ Alternatives were:
 
 const myShoppingListRoutes: Routes = [
     {
+/* Now Lazy Loaded, so path 'shopping-list' is over in APP-routing.module
         path: 'shopping-list',
+
+        Here in this module we just have relative path of '' to that
+*/
+        path: '',
         component: ShoppingListComponent,
     }
 ];
@@ -34,8 +40,8 @@ const myShoppingListRoutes: Routes = [
         ShoppingEditComponent,
     ],
     imports: [
-        CommonModule,
-        ReactiveFormsModule,
+        // CommonModule, // << Now from SharedModule
+        // ReactiveFormsModule,
         FormsModule, //  Needed here (though not in Recipes Module)
         RouterModule.forChild(myShoppingListRoutes),
         SharedModule,
@@ -46,6 +52,8 @@ const myShoppingListRoutes: Routes = [
         // because the routing is right here in the ShoppingListModule, no need.
         // Contrast with RecipesModule, where routing was in its own RecipesRoutingModule.
         // That one did need to be exported
+        // **UPDATE** to above statement. No. Even in RecipesModule it
+        was **NOT** needed to export the RecipesRoutingModule. Interesting.
 */
     ],
 })

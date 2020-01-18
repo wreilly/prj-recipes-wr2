@@ -61,11 +61,15 @@
      Here, not trying to make use of "ngForOf"
      N.B. 'ingredientControls' is a GETTER()
      -->
-        <div
+<!-- Lect. 336 re: AOT - we commented this out to see
+error occur (Details below) for AOT build compilation
+Now, we put this back in: 'ingredientControls' GETTER -->
+    <div
                 class="row"
                 *ngFor="let ingredientCtrl of ingredientControls; let myI = index"
                 [formGroupName]="myI"
                 style="margin-top: 10px;">
+                <!-- -->
 
 
 <!-- TESTING alternative syntax for ngForOf y not
@@ -104,7 +108,42 @@ Methinks.
                     all this "list of ingredients (controls)" biz. -->
 <!--                </ng-template>-->
 
-<!--  OLD. NOW WRONG.        *ngFor="let ingredientCtrl of recipeForm.get('ingredients').controls; let i = index" -->
+<!--  OLD. NOW WRONG. -->
+<!-- Lect. 336 re: AOT. We temporarily put this
+*back in* to see it hit AOT compilation error.
+Now we Comment it Out again. Cheers.
+          <div
+                  class="row"
+                  [formGroupName]="myI"
+                  style="margin-top: 10px;"
+          *ngFor="let ingredientCtrl of myRecipeForm.get('ingredients').controls; let myI = index" >
+-->
+            <!--
+            Interesting. Way up in Lect. 336 re: AOT Compiling,
+            we look at the error encountered here in
+            RecipeEdit
+            The IDE (both WebStorm and Visual Studio Code)
+            show "warnings" for above line.
+            That ".controls" is "unresolved JavaScript
+            variable".
+            (Why? Because AbstractControl (FormArray?) doesn't have a "controls" property = MBU)
+
+            Anyway:
+            The JIT (Just-In-Time) compiler (for Development)
+            does work okay with this, despite warning.
+
+            But the AOT (Ahead-Of-Time) compiler (for production
+            build) hits error.
+            ----------
+            ERROR in src/app/recipes/recipe-edit/recipe-edit.component.html(115,11): Property 'controls' does not exist on type 'AbstractControl'.
+---------------------------
+
+            Solution for AOT is to once again use
+            the syntax we already had going, up above:
+
+            *ngFor="let ingredientCtrl of ingredientControls; let myI = index"
+            Recall  N.B. 'ingredientControls' is a GETTER()
+            -->
           <div class="col-xs-8">
             <input
                     type="text"

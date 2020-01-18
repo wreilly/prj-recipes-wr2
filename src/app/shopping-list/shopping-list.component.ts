@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Ingredient } from '../shared/ingredient.model';
 import { ShoppingListService } from './shopping-list.service';
+import { LoggingService } from '../logging.service';
 
 @Component({
   selector: 'app-shopping-list',
@@ -18,7 +19,10 @@ export class ShoppingListComponent implements OnInit, OnDestroy {
   myIngredientSelectedToEditSubscription = new Subscription();
 */
 
-  constructor(private slService: ShoppingListService) { }
+  constructor(
+      private slService: ShoppingListService,
+      private myLoggingService: LoggingService,
+      ) { }
 
   ngOnInit() {
     console.log('HEY !!! 01 ngOnInit() is running on ShoppingListComponent. this.ingredients is BEFORE ', this.ingredients);
@@ -57,6 +61,9 @@ the Subscribing etc.
 
     });
 */
+
+    this.myLoggingService.printLog('ShoppingListComponent says Hi');
+
   } // /ngOnInit()
 
   populateFormWithIngredient(myIndexPassedIn) {

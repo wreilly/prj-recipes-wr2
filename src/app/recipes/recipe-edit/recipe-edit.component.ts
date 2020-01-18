@@ -157,8 +157,8 @@ export class RecipeEditComponent implements OnInit {
     const recipeIngredients = new FormArray([]);
     /* Init recipeIngredients with, for first parameter to constructor, an array.
     From the API, that array is labelled 'controls' and is of type AbstractControl[].
-    AbstractControl is more than just FormControl, but also
-    FormGroup (which we'll use), and FormArray too.
+    AbstractControl is generalized class for more than just FormControl, but also for
+    FormGroup (which we'll use), and for FormArray too.
     (You can nest this stuff like crazy.)
     >> E.G. We'll populate our FormArray with FormGroups (of FormControls) for our list of Ingredients (With name and amount)
 
