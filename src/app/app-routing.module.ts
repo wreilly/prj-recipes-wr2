@@ -37,9 +37,10 @@ const appRoutes: Routes = [
   {
     path: 'recipes',
 
-    /* OLDER WAY. THIS WORKS:
-        loadChildren: './recipes/recipes.module#RecipesModule' }
-
+    /* OLDER WAY. THIS WORKS: */
+        loadChildren: './recipes/recipes.module#RecipesModule'
+  },
+/*
     Okay - in WebStorm IDE we did *not* get the nice IDE help that is seen
     in VisualStudio Code, for the file system path to 'loadChildren:'.
     BUT!
@@ -76,11 +77,26 @@ MY EDIT:
 
     UPDATE: Actually, in tsconfig.app.json, just REMOVE the "module" line
      */
+    /*
+Error: Runtime compiler is not loaded with production configuration
+https://github.com/angular/angular-cli/issues/10582
+https://github.com/angular/angular-cli/issues/10582#issuecomment-523763194
+"...the transpiler is not handling a multiline format of the arrow function."
+ */
+    // HOPEFULLY YEP: one-liner << DANG did Not work 'for me' :o(
+/*
+    loadChildren: () => import('./recipes/recipes.module').then(m => m.RecipesModule)
+*/
+      // '.RecipesModule' is my name, name I gave it (albeit per naming conventions). Cheers.
+
+/* NOPE: Multi-line
+
     loadChildren: () => {
       return import('./recipes/recipes.module').then(m => m.RecipesModule);
       // '.RecipesModule' is my name, name I gave it (albeit per naming conventions). Cheers.
     }
-  },
+*/
+//  },
 /* btw No ".ts" file extension! (oi!)
   loadChildren: './recipes/recipes.module.ts#RecipesModule' },
 */
@@ -105,13 +121,28 @@ MY EDIT:
 // RE-INTRODUCE path, for LAZY LOADING
   {
     path: 'shopping-list',
+    loadChildren: './shopping-list/shopping-list.module#ShoppingListModule'
+  },
+    /*
+    Error: Runtime compiler is not loaded with production configuration
+    https://github.com/angular/angular-cli/issues/10582
+    https://github.com/angular/angular-cli/issues/10582#issuecomment-523763194
+    "...the transpiler is not handling a multiline format of the arrow function."
+    https://github.com/angular/angular-cli/issues/10582#issuecomment-546241471 << "one-liner didn't work for me" << ME TOO (WR__)
+     */
+    // HOPEFULLY YEP: one-liner
+/* DANG did NOT work 'for me' :o(
+    loadChildren: () => import('./shopping-list/shopping-list.module').then(moduleWeGot => moduleWeGot.ShoppingListModule)
+*/
+/* NOPE
     loadChildren: () => {
       return import('./shopping-list/shopping-list.module')
           .then(
               moduleWeGot => moduleWeGot.ShoppingListModule
           );
     }
-  },
+*/
+ // },
 /* AuthModule now
   { path: 'auth', component: AuthComponent },
 */
@@ -120,7 +151,11 @@ Now with LAZY Loading we re-introduce here in APP-routing.module:
  */
   {
     path: 'auth',
+    loadChildren: './auth/auth.module#AuthModule'
+    // Very nice. This one (auth) was already a one-liner :o)
+/* DANG did NOT work 'for me' :o(
     loadChildren: () => import('./auth/auth.module').then(moduleWeGot => moduleWeGot.AuthModule)
+*/
   },
 ];
 
