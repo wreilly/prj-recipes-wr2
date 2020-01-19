@@ -1,0 +1,16 @@
+{
+  "hosting": {
+    "public": "dist/prj-recipes-wr2",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

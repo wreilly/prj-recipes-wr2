@@ -9,6 +9,9 @@ gitlog-wr__.txt
 # ENVIRONMENT Variables for app:
 /src/environments
 
+# FIREBASE some cache thing
+/.firebase
+
 # compiled output
 /dist
 /tmp
