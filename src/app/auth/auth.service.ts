@@ -6,6 +6,12 @@ import {BehaviorSubject, Observable, Subject, throwError} from 'rxjs'; // No lon
 import {User} from './user.model';
 import { RecipeService } from '../recipes/recipe.service';
 
+import { environment } from '../../environments/environment';
+/*
+Angular automatically swaps in environment.prod.ts, when you do:
+$ ngserve build --prod
+*/
+
 export interface AuthResponseData {
     kind: string; // YER WRONG >> << No longer used by Firebase (or us). Was 'identitytoolkit#VerifyPasswordResponse', fwiw.
     // Hmm, I'm WRONG about above. We DO see this *come back* (we did not *send it*): e.g. kind: "identitytoolkit#VerifyPasswordResponse",
@@ -56,7 +62,7 @@ Yeah:      {email: "necessary@cat.edu", password: "iamacat"} // << :o)
         console.log('nameRankSerialNumber 02 ', nameRankSerialNumber);
         // Yep {email: "necessary3@cat.edu", password: "iamacat3", returnSecureToken: true}
         return this.myHttpClient.post<AuthResponseData>(
-            'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyA5y4R3M5qBiNQ8YotiEr6rW3F0uSarA28',
+            'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + environment.firebaseAPIKeyWR__,
             nameRankSerialNumber
         )
             .pipe(
@@ -84,7 +90,7 @@ Yeah:      {email: "necessary@cat.edu", password: "iamacat"} // << :o)
         console.log('02 NRSN ', nameRankSerialNumber);
 
         // tslint:disable-next-line:max-line-length
-        return this.myHttpClient.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyA5y4R3M5qBiNQ8YotiEr6rW3F0uSarA28',
+        return this.myHttpClient.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + environment.firebaseAPIKeyWR__,
             nameRankSerialNumber
             )
             .pipe(

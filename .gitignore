@@ -6,6 +6,9 @@
 # My contents of $ git log >> gitlog-wr__.txt
 gitlog-wr__.txt
 
+# ENVIRONMENT Variables for app:
+/src/environments
+
 # compiled output
 /dist
 /tmp
