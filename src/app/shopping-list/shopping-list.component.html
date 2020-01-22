@@ -3,10 +3,11 @@
     <app-shopping-edit></app-shopping-edit>
     <hr>
       <button
-             bind-disabled="ingredients.length === 0"
+             bind-disabled="(ingredientsForShoppingList | async).ingredients.length === 0"
              type="button"
              class="btn btn-warning"
              on-click="myClearShoppingList()">Clear Shopping List</button>
+
       <ul class="list-group">
           <li class="list-group-item" style="font-weight: bold">
               <span>Index: </span> -- <span>Name</span> -- <span>(Quantity)</span>
@@ -15,21 +16,39 @@
 <!-- Above bit of CSS removes the default "dot" to left of the <li>
      Thereby matches what "list-group-item" does. Bon. -->
 
-<!-- ORIG: WORKED but not using
+<!-- ORIG: WORKED but not using. UPDATE: We'll try it now in NgRx lectures... (the "ngForOf" was not working?)
+
+Q. Hmm, here is new error:
+"ShoppingListComponent.html:21 ERROR Error: Cannot find a differ supporting object '[object Object]' of type 'object'. NgFor only supports binding to Iterables such as Arrays.
+    at NgForOf.push"
+A. Oops, forgot "( ... | async).ingredients"
+
+Q2. Now I have that (above), back to Same Old Error:
+"ShoppingListComponent.html:26 ERROR TypeError: Cannot read property 'ingredients' of undefined"
+sigh.
+A2. OK - dumb bug (now fixed) I had over in:
+ 1) AppModule re: how I set up Store.forRoot()
+   StoreModule.forRoot({
+      myShoppingListReducer: shoppingListReducer
+    }),
+  2) ShoppingListComponent re: how I did Store ".select()"
+  this.ingredientsForShoppingList = this.myStore.select('myShoppingListReducer');
+
       <li
               class="list-group-item"
               style="cursor: pointer"
-              *ngFor="let ingredientwr of ingredients"
+              *ngFor="let ingredientwr of (ingredientsForShoppingList | async).ingredients"
 
       >
         <p>hmm ingredientwr: {{ ingredientwr.name }} ({{ ingredientwr.amount }})</p>
         <p>hmm ingredientwrOLDSKOOL: {{ ingredientwr['ingredient-nameName'] }} ({{ ingredientwr['amountName'] }})</p>
 -->
 <!-- on-click="populateFormWithIngredient(myIndex)" -->
-            <ng-template
+<!--  WORKED FINE. With NgRx now, hmm, something amiss -->
+          <ng-template
                     ngFor
                     let-ingredient
-                    bind-ngForOf="ingredients"
+                    bind-ngForOf="(ingredientsForShoppingList | async).ingredients"
                     let-myIndex="index">
                 <div class="list-group-item">
                     {{ myIndex }}:
@@ -40,6 +59,7 @@
                     ({{ ingredient.amount }})
                 </div>
             </ng-template>
+        <!--    -->
         <!--
         https://angular.io/api/common/NgForOf#description
         Shorthand:
