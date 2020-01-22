@@ -74,17 +74,8 @@ You specify what part of the Store you want.
 
   } // /ngOnInit()
 
-  populateFormWithIngredient(myIndexPassedIn) {
-    console.log('well we are populating. hmm.');
-
-    const yeahIngredientWeSelectedButSoWhat: Ingredient = this.slService.getIngredient(myIndexPassedIn);
-
-    console.log('yeahIngredientWeSelectedButSoWhat ', yeahIngredientWeSelectedButSoWhat); // yeah {name: "ApplesWR__", amount: 5}
-
-    // So yeah the above is interesting but kinda useless.
-    // Instead, below, let's do some NEXT-ing. Ya! JoJo Rabbit!
+  populateFormWithIngredient(myIndexPassedIn: number) {
     this.slService.myIngredientToEditIndex.next(myIndexPassedIn);
-
   }
 
   myClearShoppingList(): void {

@@ -8,8 +8,8 @@ import * as MyShoppingListActions from './shopping-list.actions';
 
 const initialState = {
     ingredients: [ // refactored here from ShoppingListService, fwiw
-        new Ingredient('ApplesWR__', 5),
-        new Ingredient('TomatoesWR__', 10),
+        new Ingredient('ApplesWR__NGRX', 5),
+        new Ingredient('TomatoesWR__NGRX', 10),
     ]
 };
 

@@ -1,23 +1,32 @@
 import { Ingredient } from '../shared/ingredient.model';
 import {Subject} from 'rxjs';
 
-
 export class ShoppingListService {
-  myIngredientsChangedSubject = new Subject<Ingredient[]>(); // LIST subscribes to this OBSERVABLE$
-  myIngredientToEditIndex = new Subject<number>(); // EDIT subscribes to this OBSERVABLE$
+
+  myIngredientsChangedSubject = new Subject<Ingredient[]>();
+  /*
+     SHOPPING-LIST subscribes to this OBSERVABLE$
+   */
+
+  myIngredientToEditIndex = new Subject<number>();
+  /*
+     SHOPPING-EDIT subscribes to this OBSERVABLE$
+     SHOPPING-LIST fires '.next()' to this OBSERVABLE$ (user click on Which Ingredient)
+  */
 
 /* **NGRX**
-  Moving to shopping-list.reducer.ts
+  Moved (a copy) to shopping-list.reducer.ts
+
+  But not yet ready to remove from here in Service...
 */
   private ingredients: Ingredient[] = [
-    new Ingredient('ApplesWR__', 5),
-    new Ingredient('TomatoesWR__', 10),
+    new Ingredient('ApplesWR__SVC', 5),
+    new Ingredient('TomatoesWR__SVC', 10),
   ];
 
-
   getIngredient(myIndexPassedIn: number) {
-
-    const ingredientToReturn: Ingredient = this.ingredients[myIndexPassedIn];
+    let ingredientToReturn: Ingredient;
+    ingredientToReturn = this.ingredients[myIndexPassedIn];
     return ingredientToReturn;
   }
 
@@ -32,24 +41,9 @@ export class ShoppingListService {
   }
 
   updateIngredient(indexPassedIn: number, ingredientEdits: Ingredient) {
-    console.log('ING 02', ingredientEdits);
-    // {ingredient-nameName: "ketchup", amountName: 4}
-
     this.ingredients[indexPassedIn] = ingredientEdits;
-    console.log('ING 03 ', this.ingredients[indexPassedIn]);
-    // {ingredient-nameName: "ketchup", amountName: 4} // << N.B. No type preface of 'Ingredient' See below.
-
-    const newIngredientToUpdateDoneRight = new Ingredient(ingredientEdits['ingredient-nameName'], ingredientEdits['amountName']);
-    console.log('ING 04 ', newIngredientToUpdateDoneRight);
-
-   this.ingredients[indexPassedIn] = newIngredientToUpdateDoneRight;
-    console.log('ING 05 ', this.ingredients[indexPassedIn]);
-    /* Array of Ingredients, properly:
-    Ingredient {name: "ApplesWR__oldmaybe", amount: 33} // << N.B. Now, "Done Right," does have/get type preface of 'Ingredient'. va bene.
-     */
-
     this.myIngredientsChangedSubject.next(this.ingredients.slice());
-  } // /updateIngredient()
+  }
 
   addIngredients(ingredients: Ingredient[]) {
     this.ingredients.push(...ingredients);

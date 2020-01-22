@@ -2,37 +2,7 @@
   <div class="col-xs-12">
     <form
             on-ngSubmit="myOnSubmit(myFormRef)"
-    ref-myFormRef="ngForm">
-      <!--
-      BETTER:
-      https://blog.thoughtram.io/angular/2016/03/21/template-driven-forms-in-angular-2.html
-      MEH:
-    https://angular.io/guide/forms#two-way-data-binding-with-ngmodel
-    -->
-<!--
-      <div class="row">
-        <label for="myspyId">test spy crap</label>
-        <input type="text" class="form-control" id="myspyId"
-               name="myspyName"
-               required
-               on-ngModelChange="myTestKitchenIngredient.name = $event"
-               bind-ngModel="myTestKitchenIngredient.name"
-             #myspyRef>
-        <br />TODONE: remove this: >>{{myspyRef.className}}<< className?
--->
-       <!--<br />myspyRef to JSON: {{myspyRef | json}}-->
-        <!-- YES:
-        [(ngModel)]="myTestKitchenIngredient.name"
-
-YES: (equivalent)
-on-ngModelChange="myTestKitchenIngredient.name = $event"
-               bind-ngModel="myTestKitchenIngredient.name"
-
-YES BUT not bound to ngForm
-on-input="myTestKitchenIngredient.name = $event.target.value"
-bind-value="myTestKitchenIngredient.name"
-        -->
-<!--      </div>-->
+            ref-myFormRef="ngForm">
       <div class="row">
         <div class="col-sm-5 form-group">
           <label for="ingredient-nameId">Ingredient Name</label>
@@ -45,66 +15,6 @@ bind-value="myTestKitchenIngredient.name"
             required
             #ingredientNameInput>
         </div>
-        <!-- Learning (Hard Way)
-        WAS:
-        ingredient-nameName << Update. YES you can do this. Just remember: formValue['ingredient-nameName']  Va bene.
-        IS NOW:
-        ingredientNameName
-
-        Not Good Idea
-        to use hyphen ( - ) in
-        NAME attribute, which
-        is the "hook" for Angular
-        form to associate template
-        elements (inputs). Hmm.
-        So
-        NO: name="ingredient-nameName"
-        YES: name="ingredientNameName"
-
-        This kerfuffle because good old 'name' is (comme d'habitude) overloaded (as hell):
-        - 'name' is attribute name Angular insists on
-        - 'name' is ingredient name, so I, being William and all, want to use that modifier (ingredient) and call it ingredientName, not just (damned) name
-        - 'Name' is the naming (o la) convention I like to overwork, adding at the end (suffix) of the property name (o la o la) like: amount property yields: amountName Also akin to how I put Id at end too: amountId.
-
-        So, when I went to put some marker between my ingredientName and my Name suffix, I went with ingredientName-Name, which I then shifted in fact to ingredient-nameName.
-        Either way, that hyphen only gets you so far.
-        When you pass the form.value from the HTML to the TypeScript function, which then tries to use that object property name as the parameter name to call the Service, well, things break down. The hyphen screws stuff up.
-
-        This do NOT work:
-            const ingredientWeGotPassedIn = new Ingredient(formValue.ingredient-nameName, formValue.amountName);
-            You get undefined on ingredient, and confusion on the '-nameName' O la.
-
-Nor this:
-    const ingredientWeGotPassedIn = new Ingredient('formValue.ingredient-nameName', formValue.amountName);
-    That bad boy is Just A String. O la.
-
-FIX IS (as already noted above): Just get rid of the damned hyphen, AND, consider reducing your mad naming conventions.
-ingredientNameName
-        -->
-        <!-- No Longer Doing:
-       bind-ngModel="myTestKitchenIngredient.name"
-       on-ngModelChange="myTestKitchenIngredient.name = $event"
-
-            Instead:
-            ngModel // << for use case of *empty* input box
-        -->
-<!--
-01 NO
-Hmm. Yes, but... It was OK on U/I, but did not get attached to the form (i.e., at Submit time). Seems to need some ngModel love.
-
-bind-value="myTestKitchenIngredient.name"
-       on-input="myTestKitchenIngredient.name = $event.target.value"
-            #ingredientNameInput>
-
- 02 YES
- ngModel love:
- https://angular.io/guide/template-syntax#ngmodel-and-value-accessors
- NOTE: how we just access $event, not $event.target.value
-
- bind-ngModel="myTestKitchenIngredient.name"
-       on-ngModelChange="myTestKitchenIngredient.name = $event"<
-            #ingredientNameInput>
--->
         <div class="col-sm-2 form-group">
           <label for="amountId">Amount</label>
           <input
@@ -116,89 +26,14 @@ bind-value="myTestKitchenIngredient.name"
             required
             [pattern]="'^[1-9][0-9]*$'"
             #amountInput>
-          <!-- re: pattern
-          Should all work:
-          pattern="^[1-9][0-9]*$"
-          [pattern]="^[1-9][0-9]*$"
-          [pattern]="'^[1-9][0-9]*$'"
-
-          The RegEx at bottom is a string, goes between single quotation marks (within the double quotation marks)
-          We can omit those single quotation marks (I'm told).
-          Also, when you bind a string onto a (what? property?), e.g., '[]=', you can omit the
-          square brackets on the left (I'm told)
-          Huh.
-
-          As to that '[]=' biz, note counter example:
-          name="amountName"  << YES
-          [name]="amountName" << NO Cannot do
-          Angular needs that 'name' property to be 'name',
-          not '[name]'
-          -->
-
-          <!-- No Longer Doing:
-            bind-ngModel="myTestKitchenIngredient.amount"
-            on-ngModelChange="myTestKitchenIngredient.amount = $event"
-
-            Instead:
-            ngModel // << for use case of *empty* input box
--->
-
-          <!-- Instructor Code
-Here in template-driven, how to have
-a Validation re: "no zero, pal!"
-Answer: RegEx
-
-Instructor
-pattern="^[1-9]+[0-9]*$"
-
-WR__
-                    pattern="[1-9]([0-9])*"
-                    pattern="[1-9]([0-9])*$"
-same as Instructor: pattern="^[1-9][0-9]*$"
-            interesting all three: 01 is ok (ought not be) hmm
-            That is, in the Amount input field, type="number"
-            -->
-
-          <!-- Instructor Code
-Here in template-driven, how to have
-a Validation re: "no zero, pal!"
-Answer: RegEx
-
-Instructor
-pattern="^[1-9]+[0-9]*$"
-
-WR__
-                    pattern="[1-9]([0-9])*"
-                    pattern="[1-9]([0-9])*$"
-same as Instructor: pattern="^[1-9][0-9]*$"
-            interesting all three: 01 is ok (ought not be) hmm
-            That is, in the Amount input field, type="number", you get a up/down clicker. If you decrement to 0, it is disabled (good)
-            On that 0, form control will *not* allow you to type in a digit to the right of the 0 e.g. 03 (good)
-            You *can* type a digit to the left e.g. 20  (good, ok)
-            But if you *clear* the form control (delete), you *can* type in 0123, and, that will be okay to add: disabled is false. (not so good. hmm)
-
-            The above is also true for Instructor Code. Ah well.
-          -->
         </div>
       </div>
       <div class="row">
         <div class="col-xs-12">
           <button class="btn btn-success"
                   type="submit"
-          bind-disabled="!myFormRef.valid"
-          >
-            WAS: Submit NOW IS: {{editMode ? 'Update/Edit' : 'Add New' }}</button>
-<!-- Apparently (above) when you have on-ngSubmit on the <form> (as I now do), you no longer need an explicit
-on-click down here on the button of
-type="submit". MBU.
--->
-<!-- WAS: (worked) -->
-<!-- *NOW* No Longer Used ...
-    // superseded by myOnSubmit()
-    // We make the one button do both: Add / Update
-          <button class="btn btn-success" type="button" (click)="onAddItem()">Add</button>
--->
-
+                  bind-disabled="!myFormRef.valid"
+          >{{editMode ? 'Update/Edit' : 'Add New' }}</button>
           <button class="btn btn-danger" type="button"
                   *ngIf="editMode"
                   on-click="onDeleteItem()">Delete</button>
@@ -207,16 +42,4 @@ type="submit". MBU.
       </div>
     </form>
   </div>
-</div>
-<!-- Done with this. Gracias.
-<div>
-  <p>oldie: myDiagnostic Test Kitchen Ingredient (5 ketchups who knew)</p>
-  {{myDiagnostic}}
-  &lt;!&ndash; myDiagnostic() is a GETTER(): string
-  https://angular.io/guide/forms#template-driven-forms &ndash;&gt;
-</div>
--->
-
-<div class="row">
-<!--  <p>Form STATUS: {{}}</p>-->
 </div>
