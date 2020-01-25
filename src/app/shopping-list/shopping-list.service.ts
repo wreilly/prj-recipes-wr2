@@ -5,17 +5,17 @@ export class ShoppingListService {
 
   myIngredientsChangedSubject = new Subject<Ingredient[]>();
   /*
-     SHOPPING-LIST subscribes to this OBSERVABLE$
+     SHOPPING-**LIST** subscribes to this OBSERVABLE$
    */
 
   myIngredientToEditIndex = new Subject<number>();
   /*
-     SHOPPING-EDIT subscribes to this OBSERVABLE$
-     SHOPPING-LIST fires '.next()' to this OBSERVABLE$ (user click on Which Ingredient)
+     SHOPPING-**EDIT** subscribes to this OBSERVABLE$
+     SHOPPING-**LIST** fires '.next()' to this OBSERVABLE$ (user click on Which Ingredient)
   */
 
 /* **NGRX**
-  Moved (a copy) to shopping-list.reducer.ts
+  Moved (a copy) of ingredients[] to shopping-list.reducer.ts
 
   But not yet ready to remove from here in Service...
 */
@@ -35,6 +35,13 @@ export class ShoppingListService {
   }
 
   addIngredient(ingredient: Ingredient) {
+    /* NGRX:
+    We now no longer, from over in RecipeEditComponent,
+     call this SLService to add one Ingredient. No.
+    We do NGRX instead, over there in RecipeEditComponent.
+    (To add one Ingredient is triggered by the user clicking "Add New"
+     on the RecipeEditComponent.)
+     */
     this.ingredients.push(ingredient);
     console.log('001 ADD ', ingredient);
     this.myIngredientsChangedSubject.next(this.ingredients.slice());
@@ -46,6 +53,10 @@ export class ShoppingListService {
   }
 
   addIngredients(ingredients: Ingredient[]) {
+    /*
+    With NGRX now, this is No Longer Called by the RecipesService
+    (The function to "Send (Recipe) Ingredients to Shopping List")
+     */
     this.ingredients.push(...ingredients);
     this.myIngredientsChangedSubject.next(this.ingredients.slice());
   }
@@ -57,7 +68,7 @@ export class ShoppingListService {
 
   deleteAllIngredients() {
     // re: as called from (new: NgRx/Store) ShoppingListComponent.myClearShoppingList() Va bene. (Does NOT yet do any deleting on Store)
-    console.log('whatIngredientsAreInService 01SL object', this.ingredients);
+    console.log('whatIngredientsAreInService 01SL object', this.ingredients); // hmm already [] empty hmm
     this.ingredients = [];
     console.log('whatIngredientsAreInService 02SL object', this.ingredients); // yep []
     this.myIngredientsChangedSubject.next(this.ingredients.slice());

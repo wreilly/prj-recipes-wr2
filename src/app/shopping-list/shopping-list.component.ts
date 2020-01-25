@@ -13,10 +13,10 @@ import { LoggingService } from '../logging.service';
 })
 export class ShoppingListComponent implements OnInit, OnDestroy {
 
-/*
+/* No Longer:
   ingredients: Ingredient[];
 
-  With NgRx we get back an Observable...
+  With NgRx we get back an *Observable*...
 */
   ingredientsForShoppingList: Observable<{ ingredients: Ingredient[]}> ;
 
@@ -25,35 +25,26 @@ export class ShoppingListComponent implements OnInit, OnDestroy {
   constructor(
       private slService: ShoppingListService,
       private myLoggingService: LoggingService,
+/* No you can't rename, here in the Component, the area of the Store,
+   that was established over in AppModule.
+      private myStore: Store<{ myShoppingListReducerFunctionHereInShoppingList: { ingredients: Ingredient[] } }>, // << No
+*/
       private myStore: Store<{ myShoppingListReducer: { ingredients: Ingredient[] } }>,
       /*
-      Store type - JavaScript object.
-      One property is the reducer function name (I gave it)
-      And that in turn has as its type a nested
-      JavaScript object with property of ingredients,
-      that is an array of Ingredient types.
+      myStore is an object property
+      It is of type Store - which in turn is a JavaScript object.
+      One property on that object is the reducer function name (which I gave it, in AppModule).
+      And that property ('myShoppingListReducer') in turn has as its type,
+      a nested JavaScript object with property of 'ingredients', and
+      that has as its type an array of Ingredient types.
        */
       ) { }
 
   ngOnInit() {
 
-    /* Perhaps name is too descriptive, too specific: "ingredientsForShoppingList"
-    - Yes, the yield here is indeed the ingredients, that go on the shopping-list. true.
-    - But, the real point here is we obtain "That Area Of The Store" we created for the ShoppingList.
-    Mostly, (possibly entirely), that ShoppingList "state" stuff is indeed just list of ingredients,
-    *but* if it ever got wider/larger scope, this "too descriptive" name would be less than optimal.
-    Better to name it something about ShoppingListStoreArea or something.
-    O well - for now, (for ever?), I'll leave as-is = Lazy Me!
-     */
     this.ingredientsForShoppingList = this.myStore.select('myShoppingListReducer');
 
-
-/* BOTH LINES replaced by NgRx (above):
-1) GET, 2) SUBSCRIBE
-That is, NgRx .select() gets us a slice/copy, and,
-returns an Observable.
-You specify what part of the Store you want.
-
+/* BOTH LINES (below) replaced by NgRx (above):
 // OLDER CODE:
     this.ingredients = this.slService.getIngredients();
 
@@ -66,13 +57,8 @@ You specify what part of the Store you want.
 */
 
     this.myLoggingService.printLog('ShoppingListComponent says Hi');
-    // No. this.myLoggingService.printLog(JSON.stringify(this.ingredientsForShoppingList)); // "circular structure..."
-/* No.
-    this.myLoggingService.printLog(this.ingredientsForShoppingList); // ? printLog() takes a string. But we are handing it:
-    Observable<{ingredients: Ingredient[]}>
-*/
 
-  } // /ngOnInit()
+  }
 
   populateFormWithIngredient(myIndexPassedIn: number) {
     this.slService.myIngredientToEditIndex.next(myIndexPassedIn);
@@ -80,21 +66,6 @@ You specify what part of the Store you want.
 
   myClearShoppingList(): void {
 
-/* Q. Hmm, how do ' | async ' here in TS file?
-   A. Hah! You do ".subscribe()". Cheers
-
-   btw - although Angular, for this Store-related Observable
-    subscription, will automatically attend to the un-subscribing,
-   (I think that's what Max said), best practice still to do
-   your own Subscription, ngOnDestroy, and .unsubscribe().
-   So I'm told.
-
-   HAH! Update. Well, if you DO "roll yer own," you'd best
-   do an IF () TEST to make sure Angular hasn't already beaten
-   you to the punch of doing the .unsubscribe() FOR YOU.
-   I hit an "undefined" error when that (apparently) occurred.
-   See below. Cheers.
-* */
     this.myTemporaryDestroyableSubscriptionForIngredients = this.ingredientsForShoppingList.subscribe(
         (objectWeGotWithIngredients) => {
           console.log('objectWeGotWithIngredients (from NgRx Store) ', objectWeGotWithIngredients);
@@ -102,7 +73,9 @@ You specify what part of the Store you want.
           ingredients: (2) [Ingredient, Ingredient]
            */
           if (objectWeGotWithIngredients.ingredients.length > 0) {
-            console.log('DO WE GET HERE objectWeGotWithIngredients ', objectWeGotWithIngredients);
+            console.log('DO WE GET HERE objectWeGotWithIngredients ', objectWeGotWithIngredients); // Yes
+
+            // TODO W-I-P no more ingredients are being seen on Service; headed to NGRX
             let whatIngredientsAreInService: Ingredient[] = this.slService.getIngredients();
             console.log('whatIngredientsAreInService 01 object ', whatIngredientsAreInService);
             this.slService.deleteAllIngredients(); // that's it!
@@ -114,18 +87,12 @@ You specify what part of the Store you want.
   }
 
   ngOnDestroy() {
-    // IF TEST needed here!!!
+    // an IF TEST is needed here!!!
     if (this.myTemporaryDestroyableSubscriptionForIngredients) {
-      // tslint:disable-next-line:max-line-length
-      console.log('ngOnDestroy ShoppingListComponent - Doing MY OWN .unsubscribe() ', this.myTemporaryDestroyableSubscriptionForIngredients);
-      /* Yes:
-      ngOnDestroy ShoppingListComponent - Doing MY OWN .unsubscribe()  Subscriber
-      {closed: false, _parentOrParents: null, _subscriptions: Array(1), syncErrorValue: null, syncErrorThrown: false, …}
-       */
       this.myTemporaryDestroyableSubscriptionForIngredients.unsubscribe();
     } else {
       console.log('ngOnDestroy ShoppingListComponent');
-      console.log('Apparently either 1) no subscription, or 2) Angular did the .unsubscribe() FOR ME - Gracias.');
+      console.log('Apparently either 1) no subscription, or 2) Angular did the .unsubscribe() FOR ME');
     }
   }
 }

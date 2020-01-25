@@ -10,6 +10,12 @@ import { Ingredient } from '../../shared/ingredient.model';
 import { ShoppingListService } from '../shopping-list.service';
 import { NgForm } from '@angular/forms';
 import {Subscription} from 'rxjs';
+import { Store } from '@ngrx/store';
+// NGRX: Yes, you can give unwieldy "local" name, here in Component, to the Actions (if you go in for that kind of thing)
+import * as MyShoppingListActionsHereInShoppingEdit from '../store/shopping-list.actions';
+/* Prob. better:
+import * as MyShoppingListActions from '../store/shopping-list.actions';
+*/
 
 @Component({
   selector: 'app-shopping-edit',
@@ -32,11 +38,14 @@ export class ShoppingEditComponent implements OnInit, OnDestroy {
 
   constructor(
       private slService: ShoppingListService,
+      // NGRX: No you can't rename, here in the Component, the area of the Store, that was established in AppModule.
+      // No: myShoppingListReducerFunctionHereInShoppingEdit
+      private myStore: Store<{'myShoppingListReducer': {ingredients: Ingredient[]}}>,
       ) { }
 
   ngOnInit() {
 
-    this.myIngredientSelectedToEditIndexSubscription =  this.slService.myIngredientToEditIndex.subscribe((ingredientIndexWeGot: number) => {
+    this.myIngredientSelectedToEditIndexSubscription = this.slService.myIngredientToEditIndex.subscribe((ingredientIndexWeGot: number) => {
       this.myIngredientSelectedToEditIndex = ingredientIndexWeGot;
       this.myIngredientSelectedToEdit = this.slService.getIngredient(this.myIngredientSelectedToEditIndex);
       this.editMode = true;
@@ -59,10 +68,20 @@ export class ShoppingEditComponent implements OnInit, OnDestroy {
 
     if (!this.editMode) {
       // ADD NEW
-      this.slService.addIngredient(ingredientWeGotPassedIn);
+      /* Now doing NGRX, no longer Service
+            this.slService.addIngredient(ingredientWeGotPassedIn);
+      */
+      this.myStore.dispatch(new MyShoppingListActionsHereInShoppingEdit.AddIngredientAction(ingredientWeGotPassedIn));
     } else {
       // EDIT/UPDATE EXISTING
+/* Now doing NGRX, no longer Service
       this.slService.updateIngredient(this.myIngredientSelectedToEditIndex, ingredientWeGotPassedIn);
+ */
+      this.myStore.dispatch(new MyShoppingListActionsHereInShoppingEdit
+              .UpdateIngredientAction(
+                  this.myIngredientSelectedToEditIndex,
+                  ingredientWeGotPassedIn
+              ));
     }
     this.myClearForm();
   }
