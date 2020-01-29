@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Store } from '@ngrx/store';
 import * as MyShoppingListActionsHereInRecipeService from '../shopping-list/store/shopping-list.actions';
+import * as fromShoppingListReducer from '../shopping-list/store/shopping-list.reducer';
 
 import { Recipe } from './recipe.model';
 import { Ingredient } from '../shared/ingredient.model';
@@ -23,7 +24,10 @@ export class RecipeService {
       // 'myShoppingListReducer' is name of part of Store, established in
       //  the configuration of StoreModule, over in AppModule.
       //  It is therefore the name that you must use here:
+/*
       private myStore: Store<{'myShoppingListReducer': { ingredients: Ingredient[]}}>
+*/
+      private myStore: Store<fromShoppingListReducer.AppState>
       ) { }
 
   getRecipes(): Recipe[] {

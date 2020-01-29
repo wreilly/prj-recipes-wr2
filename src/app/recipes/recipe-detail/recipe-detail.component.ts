@@ -31,7 +31,7 @@ export class RecipeDetailComponent implements OnInit {
   onAddToShoppingList() {
     this.myRecipeService.addIngredientsToShoppingList(this.recipe.ingredients);
     /*
-    Even with NGRX - From here in the COMPONENT, we still do invoke the SERVICE. O.K.
+    Even with NGRX - From here in the COMPONENT, we still do invoke the (Recipe)SERVICE. O.K.
     So the line above is UNCHANGED.
     It is over in the SERVICE that we actually use NGRX. Cheers.
      */

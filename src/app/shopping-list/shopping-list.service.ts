@@ -20,8 +20,8 @@ export class ShoppingListService {
   But not yet ready to remove from here in Service...
 */
   private ingredients: Ingredient[] = [
-    new Ingredient('ApplesWR__SVC', 5),
-    new Ingredient('TomatoesWR__SVC', 10),
+    new Ingredient('ApplesWR__SL_SVC', 5),
+    new Ingredient('TomatoesWR__SL_SVC', 10),
   ];
 
   getIngredient(myIndexPassedIn: number) {
