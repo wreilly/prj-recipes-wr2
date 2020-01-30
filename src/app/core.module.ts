@@ -1,7 +1,11 @@
 import { NgModule } from '@angular/core';
 
 import { RecipeService } from './recipes/recipe.service';
+
+/* NGRX - We REMOVE SL Service
 import { ShoppingListService } from './shopping-list/shopping-list.service';
+*/
+
 import { HttpInterceptorsMyConst } from './http-interceptors';
 import { LoggingService } from './logging.service';
 
@@ -17,7 +21,7 @@ import { LoggingService } from './logging.service';
     ],
     providers: [
         RecipeService,
-        ShoppingListService,
+        // ShoppingListService, // << NGRX now
         HttpInterceptorsMyConst,
         LoggingService,
         /*

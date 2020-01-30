@@ -3,7 +3,11 @@ import { Subscription, Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
 
 import { Ingredient } from '../shared/ingredient.model';
+
+/* NGRX We REMOVE SL Service
 import { ShoppingListService } from './shopping-list.service';
+*/
+
 import { LoggingService } from '../logging.service';
 
 /*
@@ -44,7 +48,10 @@ export class ShoppingListComponent implements OnInit, OnDestroy {
   myTemporaryDestroyableSubscriptionForIngredients: Subscription;
 
   constructor(
+/* NGRX now:
       private slService: ShoppingListService,
+*/
+
       private myLoggingService: LoggingService,
 /* No you can't rename, here in the Component, the area of the Store,
    that was established over in AppModule.
@@ -143,7 +150,8 @@ It is not on the name you gave to the reducer function, per se.
 
   myClearShoppingList(): void {
 
-    this.myTemporaryDestroyableSubscriptionForIngredients = this.ingredientsForShoppingList.subscribe(
+    this.myTemporaryDestroyableSubscriptionForIngredients = this.ingredientsForShoppingList // << Yes, from NGRX Store .select()...
+        .subscribe(
         (objectWeGotWithIngredients) => {
           console.log('objectWeGotWithIngredients (from NgRx Store) ', objectWeGotWithIngredients);
           /* Yes:
@@ -153,11 +161,14 @@ It is not on the name you gave to the reducer function, per se.
             console.log('DO WE GET HERE objectWeGotWithIngredients ', objectWeGotWithIngredients); // Yes
 
             // TODO W-I-P no more ingredients are being seen on Service; headed to NGRX
+/* NGRX We have REMOVED SL Service.
+W-I-P - We still have NOT yet done NGRX for "Clear all ingredients" off Shopping List TODO 2020-01-30-1420
             let whatIngredientsAreInService: Ingredient[] = this.slService.getIngredients();
             console.log('whatIngredientsAreInService 01 object ', whatIngredientsAreInService);
             this.slService.deleteAllIngredients(); // that's it!
             whatIngredientsAreInService = this.slService.getIngredients(); // go back and get again
             console.log('whatIngredientsAreInService 02 object', whatIngredientsAreInService); // yes []
+*/
           }
         }
     );

@@ -1,6 +1,9 @@
 import { Ingredient } from '../shared/ingredient.model';
 import {Subject} from 'rxjs';
 
+/* NGRX Lect. 359
+*** We REMOVE the SL Service altogether ***
+ */
 export class ShoppingListService {
 
   myIngredientsChangedSubject = new Subject<Ingredient[]>();

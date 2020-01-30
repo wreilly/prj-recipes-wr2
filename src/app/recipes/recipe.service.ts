@@ -6,7 +6,10 @@ import * as fromShoppingListReducer from '../shopping-list/store/shopping-list.r
 
 import { Recipe } from './recipe.model';
 import { Ingredient } from '../shared/ingredient.model';
+
+/* NGRX We REMOVE SL Service
 import { ShoppingListService } from '../shopping-list/shopping-list.service';
+*/
 
 /*  Max code has just @Injectable()
 @Injectable({
@@ -20,7 +23,10 @@ export class RecipeService {
   private recipes: Recipe[] = [];
 
   constructor(
+/* NGRX now:
       private slService: ShoppingListService,
+*/
+
       // 'myShoppingListReducer' is name of part of Store, established in
       //  the configuration of StoreModule, over in AppModule.
       //  It is therefore the name that you must use here:
