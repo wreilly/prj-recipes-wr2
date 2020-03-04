@@ -18,10 +18,17 @@ Y not sez I
  1. I first did the first Interface, 'StateShoppingListPart'
  2. Then that got superseded by our next Interface for 'AppState', which incorporates the 'StateShoppingListPart' Interface. Cheers.
  */
-import { AppState, StateShoppingListPart } from './store/shopping-list.reducer';
+
+/* Now superseded by "*" line just below, hey?
+import { StateShoppingListPart } from './store/shopping-list.reducer';
+*/
 // Correct, MAX Code way: (we'll be using this soon) TODO fromShoppingListReducer
 // (Note: We (I?) are (am?) using this MAX way over in ShoppingEditComponent. Cheers.)
+/* No longer. Now AppReducer instead
 import * as fromShoppingListReducer from './store/shopping-list.reducer';
+*/
+
+import * as fromRoot from '../store/app.reducer';
 
 import * as MyShoppingListActionsHereInShoppingList from './store/shopping-list.actions';
 // Better would simply be: MyShoppingListActions
@@ -59,13 +66,13 @@ export class ShoppingListComponent implements OnInit, OnDestroy {
 */
 
 /* Initial Store type:
-      private myStore: Store<{ myShoppingListReducer: { ingredients: Ingredient[] } }>,
+      private myStore: Store<{ myShoppingListViaReducer: { ingredients: Ingredient[] } }>,
 */
       /* Initial Store type:
       myStore is an object property
       It is of type Store - which in turn is a JavaScript object.
       One property on that object is the reducer function name (which I gave it, in AppModule).
-      And that property ('myShoppingListReducer') in turn has as its type,
+      And that property ('myShoppingListViaReducer') in turn has as its type,
       a nested JavaScript object with property of 'ingredients', and
       that has as its type an array of Ingredient types.
        */
@@ -73,14 +80,16 @@ export class ShoppingListComponent implements OnInit, OnDestroy {
 /* Hmm. No: not *just* the type. See next line for right way...
       private myStore: Store<StateShoppingListPart>,
 */
-/* This WORKED OK: put in the "property name" of 'myShoppingListReducer'
-      private myStore: Store<{ myShoppingListReducer: StateShoppingListPart }>, // << Now, this "SL Part" Interface as type
+/* This WORKED OK: put in the "property name" of 'myShoppingListViaReducer'
+      private myStore: Store<{ myShoppingListViaReducer: StateShoppingListPart }>, // << Now, this "SL Part" Interface as type
 */
 
-/* No. Now, with overall AppState interface, we do NOT want the "property name" of 'myShoppingListReducer' here
-      private myStore: Store<{ myShoppingListReducer: AppState }>,
+/* No. Now, with overall AppState interface, we do NOT want the "property name" of 'myShoppingListViaReducer' here
+      private myStore: Store<{ myShoppingListViaReducer: AppState }>,
 */
-      private myStore: Store<AppState>, // << Now, this overall AppState Interface as type
+// private myStore: Store<AppState>, // << Now, this overall AppState Interface as type << No longer
+// private myStore: Store<fromShoppingListReducer.StateShoppingListPart>, // << Now AppReducer instead
+         private myStore: Store<fromRoot.MyOverallRootState>,
       ) { }
 
   ngOnInit() {
@@ -89,11 +98,14 @@ export class ShoppingListComponent implements OnInit, OnDestroy {
 Recall: "LHS vs RHS" - LHS with 'my' is the "mapped name" (I gave it), over in AppModule.
 RHS is the exported name of the reducer function. I called it simply 'shoppingListReducer' (no 'my')
 So:
-'myShoppingListReducer' is the property name on the Store type definition
+'myShoppingListViaReducer' is the property name on the Store type definition
 Whereas 'shoppingListReducer' is the name of exported reducer FUNCTION
 So, yes, the .select() here invokes the property name on the part of the Store:
 */
-    this.ingredientsForShoppingList = this.myStore.select('myShoppingListReducer');
+/* No longer. Now AppReducer, to get at the ShoppingListState .... (following line)
+    this.ingredientsForShoppingList = this.myStore.select('myShoppingListViaReducer');
+*/
+    this.ingredientsForShoppingList = this.myStore.select(fromRoot.getShoppingListState);
 
 /* No, shouldn't need to do this.
 The .select() is on what you named that part of the Store.
@@ -117,7 +129,7 @@ It is not on the name you gave to the reducer function, per se.
 
     this.myLoggingService.printLog('ShoppingListComponent says Hi');
 
-  }
+  } // /ngOnInit()
 
   populateFormWithIngredient(myIndexPassedIn: number) { // << "onEditItem()"
     /*

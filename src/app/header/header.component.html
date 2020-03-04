@@ -11,12 +11,17 @@
         <li routerLinkActive="active"><a routerLink="/shopping-list">Shopping List</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
+<!-- Nope. Not NGRX for "isAuthenticated"
+        <li *ngIf="!!isAuthenticatedInStore$" routerLinkActive="active"><a>{{ userEmailToDisplay }}</a> woot isAuthenticatedInStore$ woot</li>
+-->
         <li *ngIf="isAuthenticated" routerLinkActive="active"><a>{{ userEmailToDisplay }}</a></li>
         <li *ngIf="isAuthenticated" routerLinkActive="active"><a style="cursor:pointer;" routerLink="/auth" on-click="myLogout()">Logout</a></li>
         <li *ngIf="isAuthenticated" class="dropdown" appDropdown>
           <a style="cursor: pointer;" class="dropdown-toggle" role="button">Manage <span class="caret"></span></a>
           <ul class="dropdown-menu">
+<!-- Done w this test
             <li><a style="cursor: pointer;" on-click="sendBitOText('talkintoya99')">Send bitOText</a></li>
+-->
             <li><a style="cursor: pointer;" on-click="sendData()">Send Data</a></li>
             <li><a style="cursor: pointer;" on-click="fetchData()">Fetch Data</a></li>
           </ul>

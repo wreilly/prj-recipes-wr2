@@ -22,7 +22,13 @@ import * as MyShoppingListActions from '../store/shopping-list.actions';
 */
 
 // To get at State-describing Interface(s), for Type info. e.g. AppState (Interface)
-import * as fromShoppingListReducer from '../store/shopping-list.reducer';
+// import * as fromShoppingListReducer from '../store/shopping-list.reducer';
+
+/* Hmm, no, not just that ActionReducerMap ... Need it all ( '*' ). See following line.
+import {myRootReducersMap} from '../../store/app.reducer';
+*/
+import * as fromRoot from '../../store/app.reducer';
+
 
 @Component({
   selector: 'app-shopping-edit',
@@ -45,7 +51,7 @@ export class ShoppingEditComponent implements OnInit, OnDestroy {
   localCopyOfMyBeingEditedIngredient: Ingredient; // used in ngOnInit()
 
 
-  myIngredientSelectedToEditIndexSubscription: Subscription;
+  // myIngredientSelectedToEditIndexSubscription: Subscription; // << Guess never needed? ok
   myStoreSubscription: Subscription; // << NGRX
 
   @ViewChild('myFormRef', { static: false}) myForm: NgForm;
@@ -63,9 +69,17 @@ export class ShoppingEditComponent implements OnInit, OnDestroy {
       // NGRX: No you can't rename, here in the Component, the area of the Store, that was established in AppModule.
       // No: myShoppingListReducerFunctionHereInShoppingEdit
 /* WAS WORKING....
-      private myStore: Store<{'myShoppingListReducer': {ingredients: Ingredient[]}}>,
+      private myStore: Store<{'myShoppingListViaReducer': {ingredients: Ingredient[]}}>,
 */
-      private myStore: Store<fromShoppingListReducer.AppState>,
+    // private myStore: Store<fromShoppingListReducer.AppState>,
+/* No longer. Now we have AppReducer, n'est-ce pas?
+       private myStore: Store<fromShoppingListReducer.StateShoppingListPart>,
+*/
+/* No. ".getShoppingListState" is NOT part of this "Namespace" ( ?? ) for "app.reducer". Hmm.
+private myStore: Store<fromRoot.getShoppingListState>, // << thinking to try to get just ShoppingList part of state. hmm.
+*/
+       private myStore: Store<fromRoot.MyOverallRootState>, // << Q. hmm do we want whole store here ?
+                               // A. Well, Max/Instructor code does. (So there you go.)
       ) { }
 
   ngOnInit() {
@@ -101,13 +115,17 @@ export class ShoppingEditComponent implements OnInit, OnDestroy {
     // TODO W-I-P
     this.myStoreSubscription = this.myStore
         /* Yeah Worked:
-        .select(state => state.myShoppingListReducer) // also just .select('myShoppingListReducer')
+        .select(state => state.myShoppingListViaReducer) // also just .select('myShoppingListViaReducer')
 */
-        .select('myShoppingListReducer')
+        /* No longer. We now have "mapped" (consolidated) Root Reducer (AppReducer)
+        .select('myShoppingListViaReducer')
+*/
+        // .select(myRootReducersMap.shoppingListPartOfStore) // << No didn't work
+        .select(fromRoot.getShoppingListState) // << yes (finally!)
         .subscribe( // TODO 2020-01-28-0820
             (wholeDamnSLStore) => {
               console.log('wholeDamnSLStore ', wholeDamnSLStore);
-              /* Yes:
+              /* Yes: (initially seen w. null, -1)
               ingredients: Array(2)
 0: Ingredient {name: "ApplesWR__NGRX HardCoded Reducer", amount: 5}
 1: Ingredient {name: "TomatoesWR__NGRX HardCoded Reducer", amount: 10}

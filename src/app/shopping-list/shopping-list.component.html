@@ -29,10 +29,10 @@ sigh.
 A2. OK - dumb bug (now fixed) I had over in:
  1) AppModule re: how I set up Store.forRoot()
    StoreModule.forRoot({
-      myShoppingListReducer: shoppingListReducer
+      myShoppingListViaReducer: shoppingListReducer
     }),
   2) ShoppingListComponent re: how I did Store ".select()"
-  this.ingredientsForShoppingList = this.myStore.select('myShoppingListReducer');
+  this.ingredientsForShoppingList = this.myStore.select('myShoppingListViaReducer');
 
       <li
               class="list-group-item"

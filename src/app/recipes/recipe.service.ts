@@ -2,7 +2,10 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Store } from '@ngrx/store';
 import * as MyShoppingListActionsHereInRecipeService from '../shopping-list/store/shopping-list.actions';
+/* No longer
 import * as fromShoppingListReducer from '../shopping-list/store/shopping-list.reducer';
+*/
+import * as fromRoot from '../store/app.reducer';
 
 import { Recipe } from './recipe.model';
 import { Ingredient } from '../shared/ingredient.model';
@@ -27,13 +30,15 @@ export class RecipeService {
       private slService: ShoppingListService,
 */
 
-      // 'myShoppingListReducer' is name of part of Store, established in
+      // 'myShoppingListViaReducer' is name of part of Store, established in
       //  the configuration of StoreModule, over in AppModule.
       //  It is therefore the name that you must use here:
 /*
-      private myStore: Store<{'myShoppingListReducer': { ingredients: Ingredient[]}}>
+      private myStore: Store<{'myShoppingListViaReducer': { ingredients: Ingredient[]}}>
 */
-      private myStore: Store<fromShoppingListReducer.AppState>
+  // private myStore: Store<fromShoppingListReducer.AppState> // << No longer
+// private myStore: Store<fromShoppingListReducer.StateShoppingListPart> // << Yes but now from AppReducer Root Store
+  private myStore: Store<fromRoot.MyOverallRootState>
       ) { }
 
   getRecipes(): Recipe[] {

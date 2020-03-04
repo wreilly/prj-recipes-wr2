@@ -1,31 +1,120 @@
 import {Component, OnInit, OnDestroy} from '@angular/core';
-import {Subscription} from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
 // import { tap } from 'rxjs/operators'; // No longer
+/* ? Not used
 import { HttpClient } from '@angular/common/http';
+*/
+
+import { Store } from '@ngrx/store';
+import * as fromRoot from '../store/app.reducer';
+
 import { DataStorageService } from '../shared/data-storage.service';
 import { AuthService } from '../auth/auth.service';
 import { LoggingService } from '../logging.service';
+import {take, tap} from 'rxjs/operators';
 
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html'
 })
-export class HeaderComponent implements OnInit, OnDestroy{
+export class HeaderComponent implements OnInit, OnDestroy {
 
-  isAuthenticated = false;
+  /*
+  Hmm. re: below - MAX Instructor code does NOT make this NGRX.
+  Just mere Boolean. Hmm!
+   */
+    isAuthenticated = false; // << Before just Boolean // << What Max uses simply
+
+    // isAuthenticatedInStore$: Observable<boolean>; // << Now with NGRX
+  // << I'm having challenges getting this to work. hmm. TODO 2020-03-04-0606
+
   myAuthUserSub: Subscription;
   // myHttp = new HttpClient(); // << Nope
   userEmailToDisplay: string;
 
   constructor(
       private myDataStorageService: DataStorageService,
+/* ? Not used << WAS used for little one-off test call "SendBitOText()" << done w that
       private myHttpClient: HttpClient,
+*/
       private myAuthService: AuthService,
       private myLoggingService: LoggingService,
+      private myStore: Store<fromRoot.MyOverallRootState>,
   ) { }
 
   ngOnInit(): void {
+
+    /* NEW: NGRX - Now replaces AuthService Subject for isAuthenticated
+    01 (NOW WRONG I see) << NOT USING
+    Below I first tried plain Boolean (attempt 02 is on an Observable<boolean>)
+    But the notes below do show the "double-bangs" !! to get to a plain Boolean, fwiw.
+
+    Both lines below work (bon).
+    Recall: double-bangs !!
+    - turn a non-Boolean truth-y (an Object, say) into Boolean true,
+    - and non-Boolean false-y (null, etc.) into Boolean false.
+
+    Here, what we get back, "fromRoot.."
+    StateAuthPart = { myAuthedUser: { some User object, if we are logged in } };
+     */
+    // this.isAuthenticated = !!this.myStore.select(fromRoot.getAuthState);  // Yes (I think) << yeah worked to get you a Boolean anyway
+    // this.isAuthenticated = !!this.myStore.select('authPartOfStore'); // Yes (I think) << yeah worked to get you a Boolean anyway
+
+      /*
+      NGRX 02 - Observable<boolean>
+       */
+
+/* No. This simple "assignment" gets the right value once, but doesn't update.
+
+    this.isAuthenticated = !!this.myStore.select(fromRoot.getIsAuthenticatedInStore);
+
+    // Above returns an Observable<boolean>. The double-bangs makes that a boolean. Good.
+*/
+
+/* Hmm, not a Subscription ... ?
+    this.myAuthUserSub = this.myStore.select(fromRoot.getIsAuthenticatedInStore)
+*/
+    this.myAuthUserSub = this.myStore.select(fromRoot.getIsAuthenticatedInStore)
+        .pipe(
+            tap(
+                (whatWeGotTapping) => {
+                  console.log('whatWeGotTapping boolean be: ', whatWeGotTapping);
+                  this.isAuthenticated = whatWeGotTapping;
+                }
+            )
+        )
+        .subscribe(
+            (whatWeGotSubscribing) => {
+              console.log('whatWeGotSubscribing boolean be: ', whatWeGotSubscribing);
+              this.isAuthenticated = whatWeGotSubscribing;
+            }
+        );
+
+/* Not doing NGRX for isAuthenticated itself...
+    this.isAuthenticatedInStore$ = this.myStore.select(fromRoot.getIsAuthenticatedInStore);
+*/
+/* TODO TEMPORARILY CHOP ALL THIS OFF
+        .pipe(
+            take(1),
+            tap(
+                (authStatePartWeGot) => {
+                  /!*
+              LOGGING SVC - Hmm, not being seen. Hmm.
+               *!/
+                  this.myLoggingService
+                      .printLog(`NGRX - HeaderComponent says ${JSON
+                          .stringify(authStatePartWeGot.myAuthedUser)} regarding isAuthenticated.`);
+                  /!* yep:
+                  {"email":"necessary@cat.edu","id":"hMv51L1tHof1paEgJe9ZEjUVhH82","_token":" ...
+                  *!/
+
+                  this.userEmailToDisplay = authStatePartWeGot.myAuthedUser.email;
+                }
+            )
+        );
+*/
+
 /* yeah works but below is terser/better
     this.myAuthService.userSubject$.subscribe(
         (userWeGot) => {
@@ -44,23 +133,28 @@ export class HeaderComponent implements OnInit, OnDestroy{
     );
 */
 // Tersest, bestest:
+/* WORKED. But now NGRX (above)
+    *********************************************
+
     this.myAuthUserSub = this.myAuthService.userSubject$.subscribe(userWeGot => {
       // console.log(userWeGot); // hmm, hitting undefined (when not logged in, but do have localStorage user. hmm)
       this.isAuthenticated = !!userWeGot;
       if (userWeGot) {
         console.log('userWeGot ', userWeGot);
 
-        /*
+        /!*
         LOGGING SVC
-         */
+         *!/
         this.myLoggingService.printLog(`HeaderComponent says ${JSON.stringify(userWeGot)} regarding isAuthenticated.`);
-        /* yep:
+        /!* yep:
         {"email":"necessary@cat.edu","id":"hMv51L1tHof1paEgJe9ZEjUVhH82","_token":" ...
-        */
+        *!/
 
         this.userEmailToDisplay = userWeGot.email;
       }
     });
+    *********************************************
+*/
     /*
     See also: WR__ comment re: .subscribe() doing immediate Execution of its .next(),
     like we see it do here above, also an example seen
@@ -73,8 +167,10 @@ export class HeaderComponent implements OnInit, OnDestroy{
      */
   }
 
-  // tslint:disable-next-line:max-line-length
-  sendBitOText(bitOText) { // TODONE 20191221-0802 refactor the HTTP biz here to DataStorageService (basically, this is superseded by sendData(). Cheers.
+/* Done w this little test function
+
+  sendBitOText(bitOText) {
+  // TODONE 20191221-0802 refactor the HTTP biz here to DataStorageService (basically, this is superseded by sendData(). Cheers.
     console.log('Header sendData', bitOText);
     const bitOJSON = { stuff: bitOText };
     this.myHttpClient.post('https://wr-ng8-prj-recipes-wr2.firebaseio.com/tossthings.json',
@@ -84,6 +180,7 @@ export class HeaderComponent implements OnInit, OnDestroy{
         // yep: {name: "-LwV2qXv_l5ZkrnGjKfj"}
         });
   }
+  */
 
   sendData() {
     this.myDataStorageService.storeRecipes(); // fire & forget
@@ -137,7 +234,9 @@ No Longer:
   } // /fetchData()
 
   myLogout() {
-    this.myAuthService.logOut();
+    // simply take care of local boolean right here:
+    this.isAuthenticated = false;
+    this.myAuthService.logOut(); // Service attends to other things...
   }
 
   ngOnDestroy(): void {

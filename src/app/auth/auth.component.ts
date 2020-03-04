@@ -37,7 +37,8 @@ export class AuthComponent implements OnInit, OnDestroy {
     myAuthObservable: Observable<AuthResponseData>; // BOTH log in and sign up
     errorToDisplay: string = null;
 
-    isLoggedIn = false;
+    // isLoggedIn = false; // << Presumably, apparently, never used.
+    // We determine authenticated state via a User object, not this boolean. See AuthReducer etc.
 
     @ViewChild(PutThingHereDirective, { static: false }) alertHostPosition: PutThingHereDirective;
     /*

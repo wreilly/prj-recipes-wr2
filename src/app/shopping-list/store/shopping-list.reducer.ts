@@ -15,16 +15,16 @@ import * as MyShoppingListActions from './shopping-list.actions';
    Because you need to, in various spots,
    indicate the TYPE of your (slice of) the STORE.
    e.g. ShoppingListComponent:
-   private myStore: Store<{ myShoppingListReducer: { ingredients: Ingredient[] } }>
+   private myStore: Store<{ myShoppingListViaReducer: { ingredients: Ingredient[] } }>
    Above is OK. but gets unwieldy when you've got:
 
-   private myStore: Store<{ myShoppingListReducer:
+   private myStore: Store<{ myShoppingListViaReducer:
    { ingredients: Ingredient[],
      myBeingEditedIngredient: Ingredient,
      myBeingEditedIngredientIndex: number } }>
 
   Better will be use of interface: << N.B. This next line is a GUESS, at this point
-   private myStore: Store<{ myShoppingListReducer: State }> // << or similar; t.b.d.
+   private myStore: Store<{ myShoppingListViaReducer: State }> // << or similar; t.b.d.
 */
 
 export interface StateShoppingListPart { // << Naming convention is just 'State'
@@ -34,9 +34,16 @@ export interface StateShoppingListPart { // << Naming convention is just 'State'
 }
 
 // LECT. 356 ~06:04
+// LECT. 360 - Okay, now we finally admit: this "App" level state does NOT belong here in ShoppingListReducer. No suh.
+/*
 export interface AppState {
+/!* ORIG
     myShoppingListReducer: StateShoppingListPart;
+*!/
+// This was MISSED by IDE Refactoring! (?) Hmm. Well, fixed it manually.
+    myShoppingListViaReducer: StateShoppingListPart;
 }
+*/
 
 const initialStateShoppingListPart: StateShoppingListPart = {
     ingredients: [ // NGRX: refactored here from ShoppingListService, fwiw
@@ -93,7 +100,7 @@ export function shoppingListReducer (
 // Now we have additional Actions, so use this custom "union" 'type' to bring all in:
     ngrxAction: MyShoppingListActions.ShoppingListActionsUnionType,
     // Action instances. (all use ".myPayload" (and ".type" too of course))
-) {
+): StateShoppingListPart {
     switch (ngrxAction.type) {
 /* WAS: 'string'
         case 'ADD_INGREDIENT_ACTION':

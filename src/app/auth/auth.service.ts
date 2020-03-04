@@ -3,6 +3,11 @@ import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import { Router } from '@angular/router';
 import {catchError, tap} from 'rxjs/operators';
 import {BehaviorSubject, Observable, Subject, throwError} from 'rxjs'; // No longer Subject; not using ObservableInput
+
+import { Store } from '@ngrx/store';
+import * as fromRoot from '../store/app.reducer';
+import * as fromAuthActions from '../auth/store/auth.actions';
+
 import {User} from './user.model';
 import { RecipeService } from '../recipes/recipe.service';
 
@@ -48,6 +53,7 @@ export class AuthService {
         private myHttpClient: HttpClient,
         private myRouter: Router,
         private myRecipeService: RecipeService,
+        private myStore: Store<fromRoot.MyOverallRootState>,
     ) { }
 
     signup(nameRankSerialNumber): Observable<AuthResponseData> { // >> Nah. : ObservableInput<AuthResponseData> {
@@ -212,7 +218,11 @@ expiresIn: "3600"
                 Hmm: We save the exact same User data back in to localStorage,
                 including that TokenExpiration if I am not mistaken. Hmmmmmmm.
                  */
+
+/* No longer. Now NGRX
                 this.userSubject$.next(thisHereAutoLogInUser);
+*/
+                this.myStore.dispatch(new fromAuthActions.LogInActionClass(thisHereAutoLogInUser));
 
                 localStorage.setItem('myUserData', JSON.stringify(thisHereAutoLogInUser));
                 /*
@@ -295,7 +305,11 @@ autoLogOut expirationDuration  3346540 ~= 55.8 minutes
     } // /autoLogIn()
 
     logOut() {
+/* No longer. Now NGRX
         this.userSubject$.next(null);
+*/
+        this.myStore.dispatch(new fromAuthActions.LogOutActionClass());
+
         // Maybe do navigate here too; for now, over on HeaderComponent y not
         this.myRouter.navigate(['/auth'])
             .then(goodOrBad => console.log(goodOrBad)); // e.g. true
@@ -338,7 +352,7 @@ error:
 error: "Could not parse auth token."'
                  */
 
-                const whatTheySaid = confirm('You have been inactive for ' + expirationDuration / 1000 + ' seconds. About to log you out.')
+                const whatTheySaid = confirm('You have been inactive for ' + expirationDuration / 1000 + ' seconds. About to log you out.');
                 if (whatTheySaid) {
                     this.logOut();
                 } else {
@@ -393,8 +407,22 @@ error: "Could not parse auth token."'
 
             console.log('WR__ just newed-up() User thisHereUser: ', thisHereUser); // hmm. empty baby. not good.
 
-            this.userSubject$.next(thisHereUser);
-            localStorage.setItem('myUserData', JSON.stringify(thisHereUser));
+/*  No longer. Now NGRX STORE - our User object for "Authenticated" state
+        this.userSubject$.next(thisHereUser);
+*/
+        this.myStore.dispatch(new fromAuthActions.LogInActionClass(thisHereUser));
+        /* LECT. 360 ~03:25
+        Max note: Max prefers to move more logic to the Reducer, rather
+        than here in (calling) Service.
+        So he is simply passing a payload that is the 4 component
+        properties we have here, and doing the "new User()" over
+        in the Reducer, instead of here.
+        Okay. I'm (lazily) not bothering to re-write to do same.
+        Cheers.
+         */
+
+
+        localStorage.setItem('myUserData', JSON.stringify(thisHereUser));
             /*
             LOCALSTORAGE
 --------------

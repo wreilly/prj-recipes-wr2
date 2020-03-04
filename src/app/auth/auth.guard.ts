@@ -6,6 +6,10 @@ import {Injectable} from '@angular/core';
 import {AuthService} from './auth.service';
 import {User} from './user.model';
 
+import { Store } from '@ngrx/store';
+// import { MyOverallRootState } from '../store/app.reducer'; // << nah. see following line
+import * as fromRoot from '../store/app.reducer'; // << don't we want this '*' biz?
+
 
 @Injectable({
     providedIn: 'root'
@@ -15,19 +19,27 @@ export class AuthGuard implements CanActivate {
     constructor(
         private myAuthService: AuthService,
         private myRouter: Router,
+        private myStore: Store<fromRoot.MyOverallRootState>,
     ) { }
 
     canActivate(
         route: ActivatedRouteSnapshot,
         state: RouterStateSnapshot
     ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+/* No longer. Now NGRX Store for Auth info
         return this.myAuthService.userSubject$
+*/
+/* No. You're doing it wrong ... (I hadn't (yet) done import {Store} from @ngrx/store etc. So I was way off.)
+        return this.myStore.authPartOfStore.myAuthedUser
+*/
+        // YES! return this.myStore.select('authPartOfStore') // YES << recall: { myAuthedUser: User; }
+        return this.myStore.select(fromRoot.getAuthState) // YES << recall: { myAuthedUser: User; }
             .pipe(
                 take(1), // avoid re-running, keeping live subscription. Just one value, pls.
                 map(
-                    (userWeGot: User) => {
-                        // return !!userWeGot;
-                        const isAuth = !!userWeGot;
+                    (authStateWeGot) => { // Q. hmm, how to TYPE this State here? just curious. Not needed apparently. Ok
+                        // return !!authStateWeGot;
+                        const isAuth = !!authStateWeGot;
 
                         if (isAuth) {
                             return true; // We're done!
@@ -39,7 +51,7 @@ export class AuthGuard implements CanActivate {
                         /*
 Double Bangs !! means:
 - if true(-ish) e.g. we DO have a User object --> "!!" makes it Boolean true
-- if false(-ish), e.g. for userWeGot it's undefined or null --> "!!" makes it Boolean false
+- if false(-ish), e.g. for authStateWeGot it's undefined or null --> "!!" makes it Boolean false
 
 Max transcript ~03:59
 "So we get our user and we want to return true or false, so we can simply return
