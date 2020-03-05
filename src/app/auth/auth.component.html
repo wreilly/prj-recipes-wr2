@@ -168,6 +168,12 @@ type is the appPutThingHereDirective Directive
                     type="button"
                     on-click="mySwitchMode()"
             >Switch to {{ isLoginMode ? ' Sign Up' : ' Log In' }}</button>
+            <hr />
+            <button class="btn btn-success"
+                    type="button"
+                    bind-disabled="!isLoginMode"
+                    on-click="myEZPassLogin()"
+            >EZ-Pass Login!</button>
         </form>
     </div>
 </div>

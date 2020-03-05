@@ -81,6 +81,46 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
             'myEmailFormControlName': this.myEmailFormControl,
             'myPasswordFormControlName': this.myPasswordFormControl,
         });
+    } // /ngOnInit()
+
+    myEZPassLogin() {
+        /*
+        Hard-Coded one-click login:
+        wednesday@week.com
+        asdf99
+
+        This little method a NON-D.R.Y.
+        partial repetition of myOnSubmit() below.
+
+        Note: We only get here if this.isLoginMode is true, btw, fwiw.
+         */
+        this.isLoading = true;
+
+        this.myAuthObservable = this.myAuthService.logIn(
+            {
+                'email': 'wednesday@week.com',
+                'password': 'asdf99',
+            }
+        );
+
+        this.myAuthObservable.subscribe(
+            (whatEver) => {
+                console.log('whatEver AuthResponseData ', whatEver);
+                /*
+                {kind: "identitytoolkit#VerifyPasswordResponse",
+                localId: "hLzaGHeZUzPG8Stsp1YyGYFGU4z1",
+                email: "wednesday@week.com",
+                displayName: "",
+                idToken: "eyJhbGciOiJSUzI1NiIsYmU0ZT…TbddaFZngLbpNRhK-T337eMt5ylm9N4KPAWU0FAvjTMZ7UYSQ", …}
+                 */
+
+                this.myRouter.navigate(['/recipes']);
+                // short, sweet. see below for proper full Promise
+                // etc. treatment coming off that ".navigate()"
+
+                this.isLoading = false;
+            }
+        );
     }
 
     myOnSubmit(formIGot) {
