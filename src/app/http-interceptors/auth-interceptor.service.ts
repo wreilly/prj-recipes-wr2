@@ -1,12 +1,15 @@
 // (part of) Ye Olde Barrel...
-import {HttpInterceptor, HttpResponse, HttpParams} from '@angular/common/http';
+import {HttpInterceptor, HttpParams} from '@angular/common/http'; // No longer HttpResponse
 
 import { HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
-import {Observable, ObservableInput, throwError} from 'rxjs';
-import {tap, take, exhaustMap, catchError} from 'rxjs/operators';
+import {Observable, throwError} from 'rxjs'; // No longer ObservableInput
+import {take, exhaustMap, map} from 'rxjs/operators'; // nope: tap, catchError
+
+import { Store } from '@ngrx/store';
+import * as fromRoot from '../store/app.reducer';
 
 import { AuthService } from '../auth/auth.service';
-import {User} from '../auth/user.model';
+// import {User} from '../auth/user.model'; // << no
 import {Injectable} from '@angular/core';
 
 
@@ -24,14 +27,19 @@ export class AuthInterceptorService implements HttpInterceptor {
 
     constructor(
         private myAuthService: AuthService,
+        private myStore: Store<fromRoot.MyOverallRootState>,
     ) { }
-    intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // intercept(req: HttpRequest<any>, next: HttpHandler): any {
 
-        /*  *****    REQUEST    *********
-         */
+
+/* COMMENTING IT ALL OUT NOW ...
+    interceptOLDuserSubject$(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        // intercept(req: HttpRequest<any>, next: HttpHandler): any {
+
+        /!*  *****    REQUEST    *********
+         *!/
         console.log('AUTH-INTERCEPT req.headers ', req.headers);
         console.log('AUTH-INTERCEPT JSON.stringify(req) ', JSON.stringify(req));
+*/
         /*
         {
         "url":"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?
@@ -58,7 +66,8 @@ export class AuthInterceptorService implements HttpInterceptor {
         that token to the REQUEST. Then send it along.
          */
 
-        return this.myAuthService.userSubject$
+        /* No Longer (now NGRX) */
+ /*        return this.myAuthService.userSubject$
             .pipe(
                 take(1), // gets 1 (and only 1) User from that BehaviorSubject
                 exhaustMap(
@@ -74,13 +83,13 @@ export class AuthInterceptorService implements HttpInterceptor {
                             // Okay we got a User = we are logged in
 
                             console.log('userFromTakeOne ', userFromTakeOne);
-                            /* From AuthService we got User:
+                            /!* From AuthService we got User:
                             userFromTakeOne  User
                             {email: "necessary@cat.edu",
                             id: "hMv51L1tHof1paEgJe9ZEjUVhH82",
                             _token: "eyJhbGc…wO_CPxFuE9",
                             _tokenExpirationDate: Sat Jan 04 2020 11:59:06 GMT-0500 (Eastern Standard Time)}
-                             */
+                             *!/
 
 
                             // Let's get the token off the User ;o)
@@ -102,18 +111,18 @@ export class AuthInterceptorService implements HttpInterceptor {
                     }
                 ), // /exhaustMap()
                 tap(
-                    /*
+                    /!*
                     Usually an Interceptor does not do this kind of "tap()" into the Response.
                     Instead just sends the (modified) request back/onward to the AuthService etc.
                     But, you can see the Response:
-                     */
+                     *!/
                     (thatHttpResponseWeGot: HttpResponse<any>): ObservableInput<any> => { // WAS userRightNow
                         // console.log('userRightNow ', userRightNow); // WAS undefined
                         console.log('TAP in INTERCEPTOR - EVER SEE THIS ?? thatHttpResponseWeGot ', thatHttpResponseWeGot);
-                        /* NOW I :
+                        /!* NOW I :
                         {type: 0} << initial OPTIONS OK
-                         */
-                        /* NOW II :
+                         *!/
+                        /!* NOW II :
                         LOGGED IN OK: (Also on Fetch Data)
 {
   "kind": "identitytoolkit#VerifyPasswordResponse",
@@ -125,33 +134,33 @@ export class AuthInterceptorService implements HttpInterceptor {
   "refreshToken": "AEu..hAGuYA",
   "expiresIn": "3600"
 }
-                         */
-                    /* BEFORE:
-                    With the exhaustMap() above, now this is logging the correct whole Response :o)      */
-                    return next.handle(req);
+                         *!/
+                        /!* BEFORE:
+                        With the exhaustMap() above, now this is logging the correct whole Response :o)      *!/
+                        return next.handle(req);
 
-                    /*  *****    RESPONSE    *********
-                     */
-                    /*
-    {
-      "kind": "identitytoolkit#VerifyPasswordResponse",
-      "localId": "hMv51L1tHof1paEgJe9ZEjUVhH82",
-      "email": "necessary@cat.edu",
-      "displayName": "",
-      "idToken": "eyJhbG...YMLUXg",
-      "registered": true,
-      "refreshToken": "AEu4I...wdAEplz2dVfgE",
-      "expiresIn": "3600"
-    }
-                    */
-                }
+                        /!*  *****    RESPONSE    *********
+                         *!/
+                        /!*
+        {
+          "kind": "identitytoolkit#VerifyPasswordResponse",
+          "localId": "hMv51L1tHof1paEgJe9ZEjUVhH82",
+          "email": "necessary@cat.edu",
+          "displayName": "",
+          "idToken": "eyJhbG...YMLUXg",
+          "registered": true,
+          "refreshToken": "AEu4I...wdAEplz2dVfgE",
+          "expiresIn": "3600"
+        }
+                        *!/
+                    }
                 ), // /tap()
 
-/* **** REMOVING catchError() that came from AuthService:
-MAX Code does NOT have it here in Interceptor. I was just testing things out. Cheers.
+                /!* **** REMOVING catchError() that came from AuthService:
+                MAX Code does NOT have it here in Interceptor. I was just testing things out. Cheers.
 
-                catchError(this.handleErrorInInterceptor), // << this handleError() is copied here from AuthService
-*/
+                                catchError(this.handleErrorInInterceptor), // << this handleError() is copied here from AuthService
+                *!/
 
                 catchError(
                     // UPDATE. We can keep this "catchError()" here, but,
@@ -159,13 +168,13 @@ MAX Code does NOT have it here in Interceptor. I was just testing things out. Ch
                     // << this catchError WAS on DataStorageService.storeRecipes()
 
                     (catchErrorWeGot: HttpErrorResponse): Observable<never> => {
-            /*
-            rxjs throwError "creates an Observable that never emits any value. Observable<never>
-            Instead, it errors out immediately using the same error caught by catchError"
-            https://blog.angular-university.io/rxjs-error-handling/
-             */
+                        /!*
+                        rxjs throwError "creates an Observable that never emits any value. Observable<never>
+                        Instead, it errors out immediately using the same error caught by catchError"
+                        https://blog.angular-university.io/rxjs-error-handling/
+                         *!/
                         console.log('catchErrorWeGot in Interceptor HttpErrorResponse: ', catchErrorWeGot);
-                        /* Yep on FOOBAR URL:
+                        /!* Yep on FOOBAR URL:
                         HttpErrorResponse
                         {headers: HttpHeaders, status: 0, statusText: "Unknown Error",
                         url: "https://FOOBARidentitytoolkit.googleapis.com/v1/ac…sword?
@@ -184,29 +193,29 @@ key=AIzaSyA5y4R3M5qBiNQ8YotiEr6rW3F0uSarA28:
 0 Unknown Error"
 error: ProgressEvent
 isTrusted: true
-                         */
+                         *!/
 
-/* REMOVING THIS LOGIC from CATCHERROR() on INTERCEPTOR
+                        /!* REMOVING THIS LOGIC from CATCHERROR() on INTERCEPTOR
 
-                        if (catchErrorWeGot.error instanceof ErrorEvent) {
-                            // A client-side or network error occurred. Handle it accordingly.
-                            console.error('An error occurred:', catchErrorWeGot.error.message);
-                        } else {
-                            // The backend returned an unsuccessful response code.
-                            // The response body may contain clues as to what went wrong,
-                            console.error(
-                                `Backend returned status code ${catchErrorWeGot.status}, ` +
-                                `body (error) was: ${ JSON.stringify(catchErrorWeGot.error) }`);
-                            /!*
-                            ...code 0, body was: {"isTrusted":true}
-                             *!/
-                        }
-*/
+                                                if (catchErrorWeGot.error instanceof ErrorEvent) {
+                                                    // A client-side or network error occurred. Handle it accordingly.
+                                                    console.error('An error occurred:', catchErrorWeGot.error.message);
+                                                } else {
+                                                    // The backend returned an unsuccessful response code.
+                                                    // The response body may contain clues as to what went wrong,
+                                                    console.error(
+                                                        `Backend returned status code ${catchErrorWeGot.status}, ` +
+                                                        `body (error) was: ${ JSON.stringify(catchErrorWeGot.error) }`);
+                                                    /!*
+                                                    ...code 0, body was: {"isTrusted":true}
+                                                     *!/
+                                                }
+                        *!/
 
                         // return an observable (Observable<never>), with a user-facing error message
-/* REMOVING THIS FROM CATCHERROR() on INTERCEPTOR:
-                        return throwError('Oops Send Data');
-*/
+                        /!* REMOVING THIS FROM CATCHERROR() on INTERCEPTOR:
+                                                return throwError('Oops Send Data');
+                        *!/
                         return throwError(catchErrorWeGot);
                         // simply passing through entire HttpErrorResponse object.
                         // (Q. Does that work?) (A. Yes.)
@@ -215,10 +224,10 @@ isTrusted: true
 
 
             ); // /.pipe()
-    } // /intercept()
+    } // /interceptOLDuserSubject$()
+*/
 
-
-    private handleErrorInInterceptor(errInInterceptorService: HttpErrorResponse): Observable<never> {
+    private static handleErrorInInterceptor(errInInterceptorService: HttpErrorResponse): Observable<never> {
         // << REMOVING. NO LONGER CALLED. OKAY.
         /*
         For Heck Of It
@@ -263,5 +272,85 @@ isTrusted: true
 
         return throwError(errorMessageToThrow);
     } // /handleErrorInInterceptor()
+
+    intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    // intercept(req: HttpRequest<any>, next: HttpHandler): any {
+
+        /*  *****    REQUEST    *********
+         */
+        console.log('AUTH-INTERCEPT req.headers ', req.headers);
+        console.log('AUTH-INTERCEPT JSON.stringify(req) ', JSON.stringify(req));
+        /*
+        {
+        "url":"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?
+        key=AIzaSyA5y4R3M5qBiNQ8YotiEr6rW3F0uSarA28",
+        "body":
+        {
+        "email":"necessary@cat.edu",
+        "password":"iamacat",
+        "returnSecureToken":true
+        },
+        "reportProgress":false,
+        "withCredentials":false,
+        "responseType":"json",
+        "method":"POST",
+        "headers":{"normalizedNames":{},"lazyUpdate":null,"headers":{}},
+        "params":{"updates":null,"cloneFrom":null,"encoder":{},"map":null},
+        "urlWithParams":"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyA5y4R3M5qBiNQ8YotiEr6rW3F0uSarA28"
+        }
+         */
+
+        /*
+        Interceptor's job here is to take the
+        REQUEST and get the User's token and add
+        that token to the REQUEST. Then send it along.
+         */
+
+
+/* No Longer AuthService.userSubject$ (now NGRX) */
+        // NEW NGRX
+        return this.myStore.select(fromRoot.getAuthState)
+        // return this.myAuthService.userSubject$ // <<<<<<<<< Commented out now. Cheers.
+            .pipe(
+                take(1), // gets 1 (and only 1) User from that auth part of Store. WAS: BehaviorSubject
+/* No. This tap() business here wrong.
+                tap(
+                    (whatWeTapped)  => {
+                        console.log('whatWeTapped ', whatWeTapped);
+                        return next.handle(req);
+                    }
+                ),
+*/
+                map(
+                    (stateWeGotItSeems) => {
+                        console.log('stateWeGotItSeems ', stateWeGotItSeems);
+                        return stateWeGotItSeems.myAuthedUser;
+                        /* Here in the .map(), just get the User info/object out of
+                        the store slice, pass along ('return') to next step: exhaustMap()
+                         */
+                    }
+                ),
+                exhaustMap(
+                    (isItThatAuthedUser) => {
+                        console.log('isItThatAuthedUser ', isItThatAuthedUser);
+
+                        if (!isItThatAuthedUser) {
+                            return next.handle(req);
+                        }
+
+                        // Okay, we have a User, so, let's get the token off the User ;o)
+                        // And add the ?auth=token parameter
+                        // to a CLONE of the original Request
+                        const reqWithTokenNow = req.clone(
+                            {
+                                params: new HttpParams().set('auth', isItThatAuthedUser.token)
+                                // above uses the '.token' GETter. bueno.
+                            }
+                        );
+                        return next.handle(reqWithTokenNow);
+                    }
+                )
+            ); // /.pipe()
+    } // /intercept()
 
 }
