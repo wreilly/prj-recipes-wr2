@@ -4,11 +4,11 @@ import {map, tap, take} from 'rxjs/operators';
 import {Injectable} from '@angular/core';
 
 import {AuthService} from './auth.service';
-import {User} from './user.model';
+// import {User} from './user.model'; // Not used
 
 import { Store } from '@ngrx/store';
 // import { MyOverallRootState } from '../store/app.reducer'; // << nah. see following line
-import * as fromRoot from '../store/app.reducer'; // << don't we want this '*' biz?
+import * as fromRoot from '../store/app.reducer'; // << Q. don't we want this '*' biz? A. Yeah, believe so
 
 
 @Injectable({
