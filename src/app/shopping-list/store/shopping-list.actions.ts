@@ -5,12 +5,12 @@ import { Ingredient } from '../../shared/ingredient.model';
 "use consts, to ...rule out making typos..."
 (it gets the IDE and TSLint to help you ...)
  */
-export const ADD_INGREDIENT_ACTION = 'ADD_INGREDIENT_ACTION';
-export const ADD_INGREDIENTS_ACTION = 'ADD_INGREDIENTS_ACTION';
-export const UPDATE_INGREDIENT_ACTION = 'UPDATE_INGREDIENT_ACTION';
-export const DELETE_INGREDIENT_ACTION = 'DELETE_INGREDIENT_ACTION';
-export const START_EDIT_ACTION = 'START_EDIT_ACTION'; // LOAD this item into Edit Form
-export const STOP_EDIT_ACTION = 'STOP_EDIT_ACTION';
+export const ADD_INGREDIENT_ACTION = '[Shopping List] Add Ingredient Action'; // 'ADD_INGREDIENT_ACTION';
+export const ADD_INGREDIENTS_ACTION = '[Shopping List] Add Ingredients Action'; // 'ADD_INGREDIENTS_ACTION';
+export const UPDATE_INGREDIENT_ACTION = '[Shopping List] Update Ingredient Action'; // 'UPDATE_INGREDIENT_ACTION';
+export const DELETE_INGREDIENT_ACTION = '[Shopping List] Delete Ingredient Action'; // 'DELETE_INGREDIENT_ACTION';
+export const START_EDIT_ACTION = '[Shopping List] Start Edit Action'; // 'START_EDIT_ACTION'; // LOAD this item into Edit Form
+export const STOP_EDIT_ACTION = '[Shopping List] Stop Edit Action'; // 'STOP_EDIT_ACTION';
 
 export class AddIngredientAction implements Action {
 

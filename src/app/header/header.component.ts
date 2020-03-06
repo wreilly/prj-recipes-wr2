@@ -79,7 +79,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         .pipe(
             tap(
                 (whatWeGotTapping) => {
-                  console.log('whatWeGotTapping boolean be: ', whatWeGotTapping);
+                  console.log('whatWeGotTapping boolean be: ', whatWeGotTapping); // e.g. true
                   this.isAuthenticated = whatWeGotTapping;
                 }
             )

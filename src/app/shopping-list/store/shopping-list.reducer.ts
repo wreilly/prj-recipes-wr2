@@ -416,6 +416,6 @@ wholeDamnSLStore  {ingredients: Array(4), myBeingEditedIngredient: {…}, myBein
             };
 
         default:
-            return ngrxState;
+            return ngrxState; // << Yes. (Do not use a "copy" ... here on default. good.)
     }
 }

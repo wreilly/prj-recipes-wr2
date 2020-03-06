@@ -36,10 +36,18 @@ export class AuthGuard implements CanActivate {
         return this.myStore.select(fromRoot.getAuthState) // YES << recall: { myAuthedUser: User; }
             .pipe(
                 take(1), // avoid re-running, keeping live subscription. Just one value, pls.
-                map(
-                    (authStateWeGot) => { // Q. hmm, how to TYPE this State here? just curious. Not needed apparently. Ok
-                        // return !!authStateWeGot;
-                        const isAuth = !!authStateWeGot;
+/*                map( // One more map() slipped in, to obtain the property off the state object:
+                    (authStateWeGotFromStore) => {
+                        return authStateWeGotFromStore.myAuthedUser;
+                    }
+                ),
+                Next line below is equivalent to above, in a "OneLiner". The 'return' is implied. Gwoovy.
+                */
+                map(authStateWeGotFromStoreOneLiner => authStateWeGotFromStoreOneLiner.myAuthedUser),
+                map( // now this 2nd map() just handles the property, myAuthedUser. cheers.
+                    (authedUserStateWeGot) => { // Q. hmm, how to TYPE this State here? just curious. Not needed apparently. Ok
+
+                        const isAuth = !!authedUserStateWeGot;
 
                         if (isAuth) {
                             return true; // We're done!

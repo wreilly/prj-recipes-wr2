@@ -32,7 +32,7 @@ export function authReducer(
     ngrxState: StateAuthPart = initialStateAuthPart,
     ngrxAction: fromAuthActions.AuthActionsUnionType
 ): StateAuthPart {
-
+    console.log('ngrxState in AUTH ', ngrxState);
     switch (ngrxAction.type) {
 
         case fromAuthActions.LOG_IN_ACTION:
@@ -87,9 +87,12 @@ export function authReducer(
 
         default:
             // do nada
+/*
             return {
-                ...ngrxState
+                ...ngrxState // << No!  not a "copy" here on the default. Lect. 363 ~02:05
             };
+*/
+            return ngrxState; // << YES.
 
     } // /switch()
 
