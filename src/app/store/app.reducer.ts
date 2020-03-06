@@ -2,7 +2,12 @@ import { ActionReducerMap, createFeatureSelector, createSelector } from '@ngrx/s
 
 import * as fromShoppingListReducer from '../shopping-list/store/shopping-list.reducer';
 import * as fromAuthReducer from '../auth/store/auth.reducer';
+/* This would be redundant, w line above.
+Though I do now need to comment-out the "OLD"
+stuff below
+
 import {StateAuthPart} from '../auth/store/auth.reducer';
+*/
 
 export interface MyOverallRootState {
     shoppingListPartOfStore: fromShoppingListReducer.StateShoppingListPart;
@@ -23,12 +28,14 @@ export const getShoppingListState = createFeatureSelector<fromShoppingListReduce
 
 export const getAuthState = createFeatureSelector<fromAuthReducer.StateAuthPart>('authPartOfStore');
 
+/* OLD no longer used
 export const getIsAuthenticatedInStoreOLD = createSelector(
     getAuthState,
     (statePassedIn: StateAuthPart): boolean => {
         return !!statePassedIn.myAuthedUser;
     }
 );
+*/
 
 export const getIsAuthenticatedInStore = createSelector(
     getAuthState,
