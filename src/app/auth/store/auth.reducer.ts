@@ -4,7 +4,9 @@ import { User } from '../user.model';
         public id: string, // Firebase item ID (on the user)
         private _token: string,
         private _tokenExpirationDate: Date,
- */
+
+Also: a GETter():   token()
+*/
 
 import * as fromAuthActions from './auth.actions';
 
