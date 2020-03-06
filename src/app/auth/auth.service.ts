@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import { Router } from '@angular/router';
 import {catchError, tap} from 'rxjs/operators';
-import {BehaviorSubject, Observable, Subject, throwError} from 'rxjs'; // No longer Subject; not using ObservableInput
+import {Observable, throwError} from 'rxjs'; // No longer Subject; nor BehaviorSubject; not using ObservableInput
 
 import { Store } from '@ngrx/store';
 import * as fromRoot from '../store/app.reducer';
@@ -34,10 +34,47 @@ export interface AuthResponseData {
 })
 export class AuthService {
 
+    constructor(
+        private myHttpClient: HttpClient,
+        private myRouter: Router,
+        private myRecipeService: RecipeService,
+        private myStore: Store<fromRoot.MyOverallRootState>,
+    ) { }
+
+    /* NGRX Comes to the SERVICE...
+    Time to RETIRE That Old Steady Reliable BEHAVIORSUBJECT!
+    Lect. 362
+     */
+/* COMMENTED OUT NOW FOR NGRX:
     // NEEDS TO BE BEHAVIOR SUBJECT!! :o)
     // Q. Why? A. To obtain that initial value *immediately*
     // userSubject$ = new Subject<User>(); // << Nope.
-    userSubject$ = new BehaviorSubject<User>(undefined); // must initialize. null'll do.  (Hmm, undefined ? yep it's okay too)
+>>>>    userSubject$ = new BehaviorSubject<User>(undefined); // <<<<<<<<<<<
+    // must initialize. null'll do.  (Hmm, undefined ? yep it's okay too)
+*/
+/*  ****   ERRORS we GET COMPILING **************
+ ERROR in
+    src/app/http-interceptors/auth-interceptor.service.ts(61,35):
+    error TS2339: Property 'userSubject$' does not exist on type 'AuthService'.
+
+    src/app/shared/data-storage.service.ts(164,35):
+    error TS2339: Property 'userSubject$' does not exist on type 'AuthService'.
+
+    src/app/shared/data-storage.service.ts(182,84):
+    error TS2339: Property 'token' does not exist on type '{}'.
+
+    src/app/shared/data-storage.service.ts(191,47):
+    error TS2339: Property 'map' does not exist on type '{}'.
+
+    src/app/shared/data-storage.service.ts(532,35):
+    error TS2339: Property 'userSubject$' does not exist on type 'AuthService'.
+    ******************
+
+    But also found in:  <<<<  Cool. I had ALREADY MYSELF taken care of these. Veddy nice.
+    - auth.guard.ts
+    - header.component.ts
+    - auth.component.ts << actually, here is/was not NGRX-update related
+ */
 
 
 /* Just notes on what's in a User:
@@ -49,12 +86,45 @@ export class AuthService {
 
     private myTimeoutId: number; // for autoLogOut()
 
-    constructor(
-        private myHttpClient: HttpClient,
-        private myRouter: Router,
-        private myRecipeService: RecipeService,
-        private myStore: Store<fromRoot.MyOverallRootState>,
-    ) { }
+    private static handleError(errInService: HttpErrorResponse): Observable<never> {
+        /*
+        N.B. For Heck Of It
+        I have also copied this 'handleError()' over to the Interceptor. Cheers.
+         */
+        /*
+        rxjs throwError "creates an Observable that never emits any value. Observable<never>
+        Instead, it errors out immediately using the same error caught by catchError"
+        https://blog.angular-university.io/rxjs-error-handling/
+         */
+
+        let errorMessageToThrow = 'Something who knows what went wrong';
+            console.error('errInService ', errInService); // yes whole HttpErrorResponse {}
+
+            // Test if we have what we expect: a 'message' down under sub-sub properties:
+            if (!errInService.error || !errInService.error.error) {
+                return throwError(JSON.stringify(errInService));
+                // Some OTHER kind of error, we can't send back just 'message'
+                // btw, JSON biz works well (vs just getting [object Object] on U/I)
+            }
+
+            // O.K., we do have an error with these sub-sub-sub properties:
+            switch (errInService.error.error.message) {
+                case 'EMAIL_EXISTS': {
+                    errorMessageToThrow = 'That e-mail address is already taken';
+                    break;
+                }
+                case 'EMAIL_NOT_FOUND': {
+                    errorMessageToThrow = 'That e-mail address is not found';
+                    break;
+                }
+                case 'INVALID_PASSWORD': {
+                    errorMessageToThrow = 'Incorrect password. Sorry!';
+                    break;
+                }
+            }
+
+        return throwError(errorMessageToThrow);
+    } // /handleError()
 
     signup(nameRankSerialNumber): Observable<AuthResponseData> { // >> Nah. : ObservableInput<AuthResponseData> {
         // console.log('nameRankSerialNumber 01 ', nameRankSerialNumber);
@@ -72,7 +142,7 @@ Yeah:      {email: "necessary@cat.edu", password: "iamacat"} // << :o)
             nameRankSerialNumber
         )
             .pipe(
-                catchError(this.handleError), // MAX code had error catching first. okay i guess y not
+                catchError(AuthService.handleError), // MAX code had error catching first. okay i guess y not
                 tap(
                     (wholeThingWeGot) => {
                         console.log('77 Sign Up - TAP wholeThingWeGot ', wholeThingWeGot);
@@ -100,7 +170,7 @@ Yeah:      {email: "necessary@cat.edu", password: "iamacat"} // << :o)
             nameRankSerialNumber
             )
             .pipe(
-                catchError(this.handleError),  // MAX code had error catching first. okay i guess y not
+                catchError(AuthService.handleError),  // MAX code had error catching first. okay i guess y not
                 tap(
                     (wholeThingWeGot) => {
                             console.log('66 Log In - TAP wholeThingWeGot ', wholeThingWeGot);
@@ -442,45 +512,5 @@ _tokenExpirationDate: "2020-01-05T14:39:34.039Z"
                         * 1000 milliseconds = 3,600,000 in an hour
         */
     } // /handleAuthentication()
-
-    private handleError(errInService: HttpErrorResponse): Observable<never> {
-        /*
-        N.B. For Heck Of It
-        I have also copied this 'handleError()' over to the Interceptor. Cheers.
-         */
-        /*
-        rxjs throwError "creates an Observable that never emits any value. Observable<never>
-        Instead, it errors out immediately using the same error caught by catchError"
-        https://blog.angular-university.io/rxjs-error-handling/
-         */
-
-        let errorMessageToThrow = 'Something who knows what went wrong';
-            console.error('errInService ', errInService); // yes whole HttpErrorResponse {}
-
-            // Test if we have what we expect: a 'message' down under sub-sub properties:
-            if (!errInService.error || !errInService.error.error) {
-                return throwError(JSON.stringify(errInService));
-                // Some OTHER kind of error, we can't send back just 'message'
-                // btw, JSON biz works well (vs just getting [object Object] on U/I)
-            }
-
-            // O.K., we do have an error with these sub-sub-sub properties:
-            switch (errInService.error.error.message) {
-                case 'EMAIL_EXISTS': {
-                    errorMessageToThrow = 'That e-mail address is already taken';
-                    break;
-                }
-                case 'EMAIL_NOT_FOUND': {
-                    errorMessageToThrow = 'That e-mail address is not found';
-                    break;
-                }
-                case 'INVALID_PASSWORD': {
-                    errorMessageToThrow = 'Incorrect password. Sorry!';
-                    break;
-                }
-            }
-
-        return throwError(errorMessageToThrow);
-    } // /handleError()
 
 }
