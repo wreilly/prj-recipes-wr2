@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpParams} from '@angular/common/http';
 // import {Subject, throwError} from 'rxjs'; // << NO not here in Service
-import {Observable, ObservableInput, throwError, Subscription} from 'rxjs';
+import {Observable, ObservableInput, throwError, Subscription, of} from 'rxjs';
 import {tap, map, take, exhaustMap, catchError} from 'rxjs/operators';
 import { RecipeService } from '../recipes/recipe.service';
 import { Recipe } from '../recipes/recipe.model';
@@ -161,7 +161,49 @@ No.
 
     // fetchRecipesWORKED(): Observable<Recipe[]> {
     fetchRecipesWORKED() { // seems to not have needed the type return (line above) Okay.
-        return this.myAuthService.userSubject$
+
+        /*
+        UPDATE Need to kill off this ancient unused code!
+        It is calling the now-removed userSubject$ from AuthService.
+        Going to substitute some stupid nothing Subject here instead.
+        Good luck.
+        https://angular.io/guide/observables#subscribing
+
+        https://stackoverflow.com/questions/36986548/when-to-use-asobservable-in-rxjs
+        const myAPI = {
+  getData: () => return new Observable(subscriber => {
+    const source = new SomeWeirdDataSource();
+    source.onMessage = (data) => subject.next({ type: 'message', data });
+    source.onOtherMessage = (data) => subject.next({ type: 'othermessage', data });
+    return () => {
+      // Even better, now we can tear down the data source for cancellation!
+      source.destroy();
+    };
+  });
+}
+         */
+        const myAPI = {
+            getData: () => {
+                return new Observable(
+                    (subscriber) => {
+/* Okay, so I have completely neutered this bit of code.
+But, I guess I have done what I sought to do: swapped in a benign useless Observable
+that my former code below can ".pipe()" etc. in lieu of the former AuthService.userSubject$.
+Woot. iguess
+
+                        const source = new SomeWeirdDataSource();
+                        source.onMessage = (data) => subject.next({ type: 'message', data });
+                        source.onOtherMessage = (data) => subject.next({ type: 'othermessage', data });
+*/
+                        return () => {
+                            // Even better, now we can tear down the data source for cancellation!
+                            // source.destroy();
+                        };
+                    });
+            }
+        }
+        // return this.myAuthService.userSubject$ // <<<<<<<<<<<<< KEY LINE COMMENTED OUT, EFFECTIVELY
+        return myAPI.getData()  // <<<<<<<<<<< TOTAL DUMMY OBSERVABLE JUST SWAPPED IN SO IT'LL COMPILE FER CHRISSAKES
             .pipe(
                 tap((userIGot: User) => {
                     console.log('WR__CODE fetchRecipes TAP() userIGot y not ', userIGot); //
@@ -457,7 +499,7 @@ Trying "my way" to add Token to the Request.
     } // /fetchRecipesOLDEST() // << NOT CALLING
 
     storeRecipe() {
-        // TODO (store 1 Recipe) ?
+        // TODONOPE (Q. Store 1 Recipe ?  A. Guess not.)
     }
 
 
@@ -529,7 +571,56 @@ Trying "my way" to add Token to the Request.
 
     storeRecipesWORKED() {
         const recipesToStore: Recipe[] = this.myRecipeService.getRecipes();
-        return this.myAuthService.userSubject$.pipe(
+
+
+        /*
+        UPDATE Need to kill off this ancient unused code!
+        It is calling the now-removed userSubject$ from AuthService.
+        Going to substitute some stupid nothing Subject here instead.
+        Good luck.
+        https://angular.io/guide/observables#subscribing
+
+        https://stackoverflow.com/questions/36986548/when-to-use-asobservable-in-rxjs
+        const myAPI = {
+  getData: () => return new Observable(subscriber => {
+    const source = new SomeWeirdDataSource();
+    source.onMessage = (data) => subject.next({ type: 'message', data });
+    source.onOtherMessage = (data) => subject.next({ type: 'othermessage', data });
+    return () => {
+      // Even better, now we can tear down the data source for cancellation!
+      source.destroy();
+    };
+  });
+}
+         */
+        let myObservableOfThing;
+        const myAPITwo = { // No. OperatorFunction<string, any>  cannot work w ExhaustMap below's OperatorFunction<User, any>  Cheers.
+            myObservableOfThing: myObservableOfThing = of('a', 'b', 'c'),
+        };
+        const myAPI = { // Yeah, once completely neutered, this at least can swap in, doing nothing. harrumph & Etc.
+            getData: () => {
+                return new Observable(
+                    (subscriber) => {
+                        /* Okay, so I have completely neutered this bit of code.
+                        But, I guess I have done what I sought to do: swapped in a benign useless Observable
+                        that my former code below can ".pipe()" etc. in lieu of the former AuthService.userSubject$.
+                        Woot. iguess
+
+                                                const source = new SomeWeirdDataSource();
+                                                source.onMessage = (data) => subject.next({ type: 'message', data });
+                                                source.onOtherMessage = (data) => subject.next({ type: 'othermessage', data });
+                        */
+                        return () => {
+                            // Even better, now we can tear down the data source for cancellation!
+                            // source.destroy();
+                        };
+                    });
+            }
+        }
+        // return this.myAuthService.userSubject$ // <<<<<<<<<<<<< KEY LINE COMMENTED OUT, EFFECTIVELY
+        return myAPI.getData() // YEAH <<<<<<<<<<< TOTAL DUMMY OBSERVABLE JUST SWAPPED IN SO IT'LL COMPILE FER CHRISSAKES
+        // return myAPITwo.myObservableOfThing // NO <<<<<<<<<<< TOTAL DUMMY OBSERVABLE TRIED TO SWAP IN O WELL
+            .pipe(
             take(1), // gets user data, once. unsubscribes.
             exhaustMap(
                 (userWeGot: User): ObservableInput<any> => {
