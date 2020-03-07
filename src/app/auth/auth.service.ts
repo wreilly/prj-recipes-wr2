@@ -17,6 +17,8 @@ Angular automatically swaps in environment.prod.ts, when you do:
 $ ngserve build --prod
 */
 
+// NGRX EFFECTS. This interface will be moving OUT of the Service here...
+// (TO: auth.effects.ts, for starters)
 export interface AuthResponseData {
     kind: string; // YER WRONG >> << No longer used by Firebase (or us). Was 'identitytoolkit#VerifyPasswordResponse', fwiw.
     // Hmm, I'm WRONG about above. We DO see this *come back* (we did not *send it*): e.g. kind: "identitytoolkit#VerifyPasswordResponse",
@@ -165,6 +167,9 @@ Yeah:      {email: "necessary@cat.edu", password: "iamacat"} // << :o)
 
         console.log('02 NRSN ', nameRankSerialNumber);
 
+        /*
+        NGRX EFFECTS - this HttpClient call now copied to auth.effects.ts
+         */
         // tslint:disable-next-line:max-line-length
         return this.myHttpClient.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + environment.firebaseAPIKeyWR__,
             nameRankSerialNumber
