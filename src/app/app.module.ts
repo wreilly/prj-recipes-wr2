@@ -3,6 +3,8 @@ import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { EffectsModule } from '@ngrx/effects';
+import { AuthEffects } from './auth/store/auth.effects';
 
 import { environment } from '../environments/environment';
 
@@ -90,6 +92,7 @@ shoppingList: shoppingListReducer
       the "myShoppingListViaReducer" to get at that part of the Store. Cheers.
       (I had mistakenly been invoking just "shoppingListReducer" = WRONG-O.)
        */
+    EffectsModule.forRoot([AuthEffects]),
     !environment.production ? StoreDevtoolsModule.instrument({
       maxAge: 10
     }) : [],

@@ -24,7 +24,7 @@ export interface AuthResponseData {
 
 
 @Injectable() // << OK later, we DO. << Hmm. Max does NOT have
-class AuthEffects { // N.B. constructor() on BOTTOM, fwiw
+export class AuthEffects { // N.B. constructor() on BOTTOM, fwiw
     @Effect()
     myAuthLoginEffect = this.myEffectActions$.pipe( // << OUTER .pipe(). NO catchERROR here!
         // "don't .subscribe(). ngrx will subscribe for you. just call .pipe()
@@ -39,7 +39,7 @@ class AuthEffects { // N.B. constructor() on BOTTOM, fwiw
                     .post<AuthResponseData>(
                         'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + environment.firebaseAPIKeyWR__,
                         /* nameRankSerialNumber // << nope.
-                        That object variable I created was over in Service. Here we'll just use an object body simply as follows: */
+                        That object variable NRSN I created was over in Service. Here we'll just use an object body simply as follows: */
                         {
                             email: authDataWeGot.myPayload.email,
                             password: authDataWeGot.myPayload.password,

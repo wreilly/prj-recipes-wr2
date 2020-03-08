@@ -2,10 +2,16 @@ import {Component, OnInit, ComponentFactoryResolver, ViewChild, OnDestroy} from 
 import {Observable, Subscription} from 'rxjs';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+
+import { Store } from '@ngrx/store';
+import * as fromRoot from '../store/app.reducer';
+import * as AuthActions from './store/auth.actions';
+
 import { AuthService, AuthResponseData } from './auth.service';
 
 import { AlertComponent } from '../shared/alert/alert.component';
 import { PutThingHereDirective } from '../shared/put-thing-here/put-thing-here.directive';
+import {LogInStartEffectActionClass} from './store/auth.actions';
 
 @Component({
     selector: 'app-auth',
@@ -53,6 +59,7 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
         private myRouter: Router,
         private myComponentFactoryResolver: ComponentFactoryResolver,
         // private myPutThingHereDirective: PutThingHereDirective, // << not necessary ?
+        private myStore: Store<fromRoot.MyOverallRootState>,
     ) {
 
 
@@ -137,10 +144,19 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
         // Yeah. {myEmailFormControlName: "necessary2@cat.edu", myPasswordFormControlName: "iamacat3"}
 
         if (this.isLoginMode) {
+/* No Longer. Now NGRX(Effects)
             this.myAuthObservable = this.myAuthService.logIn({
                     'email': formIGot.value.myEmailFormControlName,
                     'password': formIGot.value.myPasswordFormControlName,
                 }
+*/
+            this.myStore.dispatch(new LogInStartEffectActionClass(
+                // dispatch does not return an Observable... TODO re: how we know when done etc.
+                {
+                    email: formIGot.value.myEmailFormControlName,
+                    password: formIGot.value.myPasswordFormControlName,
+                }
+                )
             );
 
 /* NOPE. Just subscribe ONCE (further below) (to cover both Log In, and Sign Up)
