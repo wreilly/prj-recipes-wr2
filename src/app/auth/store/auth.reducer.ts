@@ -58,9 +58,24 @@ export function authReducer(
             return { ...ngrxState, myAuthedUser: userToUpdateWith };
              */
 
+            /*
+            OK I too will now new up a User() object here in the Reducer,
+            to return as the 'myAuthedUser'
+             */
+
+            const newedUpUserToReturn: User = new User(
+                ngrxAction.myPayload.email,
+                ngrxAction.myPayload.id,
+                ngrxAction.myPayload._token,
+                ngrxAction.myPayload._tokenExpirationDate
+            )
+
             return {
                 ...ngrxState, // << presumably the whole App State (a "..." copy now = good)
+/* NO LONGER USED:
                 myAuthedUser: ngrxAction.myPayload, // << we modify that state via the ACTION's PAYLOAD. Cheers.
+*/
+                myAuthedUser: newedUpUserToReturn,
                 /* A "MAX" note: if your property name and your variable name do match
                 (like most software developers do this), then you can use a shorthand:
                 return {

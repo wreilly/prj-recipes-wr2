@@ -106,8 +106,9 @@ User { token: null }
     private readonly _tokenExpirationDate;
 
 // Ignore these next 2 lines
-    mailing; // testing var declaration a la primitive-issimo. okay.
-    mailingString: string; // testing var declaration a la primitive but Typed mode. okay.
+    // Hmm, only now causing some trouble; see auth.effects.ts Lect 367. Commenting out both
+    // mailing; // testing var declaration a la primitive-issimo. okay.
+    // mailingString: string; // testing var declaration a la primitive but Typed mode. okay.
 
     get token() {
 
@@ -115,8 +116,10 @@ User { token: null }
             // Token expired or non-existent
             return null;
         }
+/*
         console.log('primitive-issimo: this.mailing ', this.mailing);
         console.log('primitive but Typed: this.mailingString ', this.mailingString);
+*/
         // console.log('primitive but Typed: this.mailingString ', 1000 * this.mailingString); // << error
         // "error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number' or an enum type."
         // (Same for the left-hand side, btw)

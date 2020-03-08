@@ -175,7 +175,7 @@ Yeah:      {email: "necessary@cat.edu", password: "iamacat"} // << :o)
             nameRankSerialNumber
             )
             .pipe(
-                catchError(AuthService.handleError),  // MAX code had error catching first. okay i guess y not
+                catchError(AuthService.handleError),  // MAX code had error catching first. okay i guess y not<
                 tap(
                     (wholeThingWeGot) => {
                             console.log('66 Log In - TAP wholeThingWeGot ', wholeThingWeGot);
@@ -297,7 +297,15 @@ expiresIn: "3600"
 /* No longer. Now NGRX
                 this.userSubject$.next(thisHereAutoLogInUser);
 */
-                this.myStore.dispatch(new fromAuthActions.LogInActionClass(thisHereAutoLogInUser));
+                this.myStore.dispatch(new fromAuthActions.LogInActionClass(
+                    // thisHereAutoLogInUser // << No. Not a User object
+                    {
+                        email: thisHereAutoLogInUser.email,
+                        id: thisHereAutoLogInUser.id,
+                        _token: thisHereAutoLogInUser.token,
+                        _tokenExpirationDate: new Date(loggedInUserObjectLiteral._tokenExpirationDate)
+                    }
+                ));
 
                 localStorage.setItem('myUserData', JSON.stringify(thisHereAutoLogInUser));
                 /*
@@ -473,7 +481,7 @@ error: "Could not parse auth token."'
         Assign that to LHS. Bueno.
          */
 
-            const thisHereUser = new User(
+            const thisHereUser = new User( // << No Longer Using
                 email,
                 userLocalId,
                 token,
@@ -485,7 +493,15 @@ error: "Could not parse auth token."'
 /*  No longer. Now NGRX STORE - our User object for "Authenticated" state
         this.userSubject$.next(thisHereUser);
 */
-        this.myStore.dispatch(new fromAuthActions.LogInActionClass(thisHereUser));
+        this.myStore.dispatch(new fromAuthActions.LogInActionClass(
+            // thisHereUser // << NO, not User object
+            {
+                email: email,
+                id: userLocalId,
+                _token: token,
+                _tokenExpirationDate: expirationDateForThis,
+            }
+        ));
         /* LECT. 360 ~03:25
         Max note: Max prefers to move more logic to the Reducer, rather
         than here in (calling) Service.

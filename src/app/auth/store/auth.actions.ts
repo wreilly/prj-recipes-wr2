@@ -22,10 +22,14 @@ export class LogInStartEffectActionClass implements Action {
 export class LogInActionClass implements Action {
     readonly type = LOG_IN_ACTION;
     constructor(
-        public myPayload: User
-    ) {
-
+        // public myPayload: User // << No. has extra stuff like get token()
+    public myPayload: {
+        email: string,
+        id: string, // sheesh. Max has id: on User model, but userId: on his Login Action. Sheesh.
+        _token: string, // sheesh. Max uses token
+        _tokenExpirationDate: Date, // sheesh. Max uses expirationDate: Date, OR, expiresIn: number
     }
+    ) {  }
 }
 
 export class LogOutActionClass implements Action {
@@ -35,4 +39,5 @@ export class LogOutActionClass implements Action {
 
 export type AuthActionsUnionType =
       LogInActionClass
-    | LogOutActionClass;
+    | LogOutActionClass
+    | LogInStartEffectActionClass;
