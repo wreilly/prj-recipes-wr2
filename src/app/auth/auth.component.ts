@@ -12,6 +12,7 @@ import { AuthService, AuthResponseData } from './auth.service';
 import { AlertComponent } from '../shared/alert/alert.component';
 import { PutThingHereDirective } from '../shared/put-thing-here/put-thing-here.directive';
 import {LogInStartEffectActionClass} from './store/auth.actions';
+import {StateAuthPart} from './store/auth.reducer';
 
 @Component({
     selector: 'app-auth',
@@ -36,12 +37,23 @@ export class AuthComponent implements OnInit, OnDestroy {
 
     isLoading = false; // spinner-biz
 
+    /* 2020-03-09
+    OLD BUSINESS!
+    I'll leave "nowAmReady" at true,
+    but introduce a new flag to mean false: "nowAmDoneWith" (!)
+    and use that in a key spot or two
+    in the morass of Old Business code below.
+    Oi!
+     */
     nowAmReady = true; // false;
 /* Ready to use the Observable here in the Component, as receiving the Service's return (vs. doing the .subscribe() here in the Component).
      */
+    nowAmDoneWith = false;
 
     myAuthObservable: Observable<AuthResponseData>; // BOTH log in and sign up
     errorToDisplay: string = null;
+
+    myStoreAuthObservable$: Observable<any>;
 
     // isLoggedIn = false; // << Presumably, apparently, never used.
     // We determine authenticated state via a User object, not this boolean. See AuthReducer etc.
@@ -60,13 +72,11 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
         private myComponentFactoryResolver: ComponentFactoryResolver,
         // private myPutThingHereDirective: PutThingHereDirective, // << not necessary ?
         private myStore: Store<fromRoot.MyOverallRootState>,
-    ) {
-
-
-    }
+    ) { }
 
     ngOnInit() {
         this.errorToDisplay = null; // refresh (remove) w re-init component!
+        // HMM. MAX CODE does not do this (above). HMM.
 
         this.myEmailFormControl = new FormControl('', {
             validators: [
@@ -88,6 +98,24 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
             'myEmailFormControlName': this.myEmailFormControl,
             'myPasswordFormControlName': this.myPasswordFormControl,
         });
+
+        // NGRX(Effects) biz here in OnInit() ??? << Nah << Hah! Actually, actually, I was RITE!
+        // Max (AT FIRST) does it not here but down in myOnSubmit() - THEN he moves it up to ngOnInit(). cheers.
+        this.myStoreAuthObservable$ = this.myStore.select(fromRoot.getAuthState);
+        this.myStoreAuthObservable$.subscribe(
+            (authStateWeGot: StateAuthPart) => {
+                this.isLoading = authStateWeGot.myIsLoading;
+                this.errorToDisplay = authStateWeGot.myAuthError;
+                if (this.errorToDisplay) { // (authStateWeGot.myAuthError) { // << yeah worked too
+                    this.myAuthShowErrorAlert(`FROM STORE AUTH ERROR BIZ: ${this.errorToDisplay}`);
+                    // ${authStateWeGot.myAuthError} // << yeah worked too
+                }
+            },
+            (errWeGotSubscribing) => {
+                console.log('errWeGotSubscribing ', errWeGotSubscribing);
+            }
+        );
+
     } // /ngOnInit()
 
     myEZPassLogin() {
@@ -144,20 +172,36 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
         // Yeah. {myEmailFormControlName: "necessary2@cat.edu", myPasswordFormControlName: "iamacat3"}
 
         if (this.isLoginMode) {
-/* No Longer. Now NGRX(Effects)
+/* No Longer using Service. Now NGRX(Effects)
             this.myAuthObservable = this.myAuthService.logIn({
                     'email': formIGot.value.myEmailFormControlName,
                     'password': formIGot.value.myPasswordFormControlName,
                 }
 */
             this.myStore.dispatch(new LogInStartEffectActionClass(
-                // dispatch does not return an Observable... TODO re: how we know when done etc.
+                // dispatch does not return an Observable... TODO re: how we know when done or error etc.
                 {
                     email: formIGot.value.myEmailFormControlName,
                     password: formIGot.value.myPasswordFormControlName,
                 }
                 )
             );
+
+            // NEW. NGRX(Effects). Note you could omit the Observable variable$ and just directly .subscribe() to the .select(). Cheers.
+            // THESE 2 LINES ARE IN NgOnInit() INSTEAD. Bon.
+            // this.myStoreAuthObservable$ = this.myStore.select(fromRoot.getAuthState);
+
+            // NEW NGRX(Effects)
+/*
+            this.myStoreAuthObservable$.subscribe(
+                (whatWeGotOkay: StateAuthPart) => { // type? AuthResponseData? no. StateAuthPart
+                    console.log(whatWeGotOkay.myAuthError); // ? "error" from login is part of our Auth State
+                },
+                (errWeGot) => {
+                    console.log(errWeGot); // this would be error, in subscribing, or some such
+                }
+            );
+*/
 
 /* NOPE. Just subscribe ONCE (further below) (to cover both Log In, and Sign Up)
 
@@ -224,7 +268,10 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
                 );
         }
 
+        /*
         if (this.nowAmReady) {
+*/
+        if (this.nowAmDoneWith) { // 2020-03-09 We now turn this OFF (false)
             // 02, part 2
             // After either Signup OR Login, we here .subscribe()
             /* .subscribe() EXECUTES!
@@ -254,7 +301,7 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
     .subscribe(userWeGot => this.isAuthenticated = !!userWeGot);
 
              */
-            this.myAuthObservable.subscribe(
+            this.myAuthObservable.subscribe( // << We don't want to trigger this .subscribe anymore. see 'false' above
                 (whatIGot) => {
                     console.log('whatIGot ', whatIGot); // yes
                     /* N.B. This is just "AuthResponseData" - NOT a User (object)

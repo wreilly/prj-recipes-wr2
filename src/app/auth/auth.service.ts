@@ -92,6 +92,8 @@ export class AuthService {
         /*
         N.B. For Heck Of It
         I have also copied this 'handleError()' over to the Interceptor. Cheers.
+
+        2020-03-09 Hmm, also copied/refactored over to Auth.Effects.ts
          */
         /*
         rxjs throwError "creates an Observable that never emits any value. Observable<never>

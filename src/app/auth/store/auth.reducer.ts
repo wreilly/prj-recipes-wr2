@@ -22,10 +22,14 @@ re: authenticated state (is logged in: Y/N T/F)
 /Users/william.reilly/dev/Angular/Udemy-AngularMaterial-MaxS/2019/WR__2/fitness-tracker-wr3/src/app/auth/auth.reducer.ts
  */
     myAuthedUser: User;
+    myAuthError: string; // new bit of state, now w. ngrxEffects re: Login Fail Lect. 368
+    myIsLoading: boolean; // another bit of (U/I) state; perhaps temporarily here in Auth
 }
 
 const initialStateAuthPart: StateAuthPart = {
     myAuthedUser: null,
+    myAuthError: null, // no error, to begin
+    myIsLoading: false,
 };
 
 export function authReducer(
@@ -34,10 +38,28 @@ export function authReducer(
 ): StateAuthPart {
     console.log('ngrxState in AUTH ', ngrxState);
     switch (ngrxAction.type) {
+        case fromAuthActions.LOG_IN_START_EFFECT_ACTION: // '[Auth] Login Start Effect Action':
+            // Kinda pass-through simply, to "Start"...
+            return {
+                ...ngrxState,
+                myAuthError: null, // reset if need be
+                myIsLoading: true, // !!
+            };
+            // break;
+
+        case fromAuthActions.LOG_IN_FAIL_EFFECT_ACTION:  // '[Auth] Login Fail Effect Action':
+            // Nullify any User since we did fail...
+            return {
+                ...ngrxState,
+                myAuthedUser: null,
+                myAuthError: ngrxAction.myPayload, // error string IS payload
+                myIsLoading: false,
+            };
+            // break;
 
         case fromAuthActions.LOG_IN_ACTION:
 
-/* No. Hold onto your horses. (The "copy" gets done on that "..." spread operator below)
+/* No. Not "copying" out of the gate here. Hold onto your horses. (The "copy" gets done on that "..." spread operator below)
             // 1. MAKE A COPY! << Nah
             const myStateToBeUpdatedACopyObjectViaAssign: StateAuthPart = ngrxState; // { myAuthedUser: null };
             Object.assign(myStateToBeUpdatedACopyObjectViaAssign, ngrxState); // << State passed in, in Action!
@@ -68,7 +90,7 @@ export function authReducer(
                 ngrxAction.myPayload.id,
                 ngrxAction.myPayload._token,
                 ngrxAction.myPayload._tokenExpirationDate
-            )
+            );
 
             return {
                 ...ngrxState, // << presumably the whole App State (a "..." copy now = good)
@@ -84,6 +106,8 @@ export function authReducer(
                 }
 
                  */
+                myAuthError: null, // << reset
+                myIsLoading: false,
             };
 /* Um, I Don't Think So:
 
@@ -98,6 +122,7 @@ export function authReducer(
             return {
                 ...ngrxState,
                 myAuthedUser: null, // SET to null. Done.
+                myAuthError: null, // reset
             };
 
         default:

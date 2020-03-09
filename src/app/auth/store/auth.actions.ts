@@ -7,7 +7,11 @@ export const LOG_IN_START_EFFECT_ACTION = '[Auth] Login Start Effect Action';
 export const LOG_IN_ACTION = '[Auth] Login Action'; // 'LOG_IN_ACTION';
 // TODO Above could now be renamed "LOG_IN_SUCCESS_ACTION" ... we'll see...
 
+export const LOG_IN_FAIL_EFFECT_ACTION = '[Auth] Login Fail Effect Action';
+
 export const LOG_OUT_ACTION = '[Auth] Logout Action'; // 'LOG_OUT_ACTION';
+
+// ***************************************
 
 export class LogInStartEffectActionClass implements Action {
     readonly type = LOG_IN_START_EFFECT_ACTION;
@@ -16,7 +20,13 @@ export class LogInStartEffectActionClass implements Action {
         email: string,
         password: string,
     }) { }
+}
 
+export class LogInFailEffectActionClass implements Action {
+    readonly type = LOG_IN_FAIL_EFFECT_ACTION;
+
+    constructor(public myPayload: string) { }
+    // string is just an error message...
 }
 
 export class LogInActionClass implements Action {
@@ -40,4 +50,5 @@ export class LogOutActionClass implements Action {
 export type AuthActionsUnionType =
       LogInActionClass
     | LogOutActionClass
-    | LogInStartEffectActionClass;
+    | LogInStartEffectActionClass
+    | LogInFailEffectActionClass;
