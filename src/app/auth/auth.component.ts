@@ -11,7 +11,7 @@ import { AuthService, AuthResponseData } from './auth.service';
 
 import { AlertComponent } from '../shared/alert/alert.component';
 import { PutThingHereDirective } from '../shared/put-thing-here/put-thing-here.directive';
-import {LogInStartEffectActionClass} from './store/auth.actions';
+import {ClearErrorActionClass, LogInStartEffectActionClass} from './store/auth.actions';
 import {StateAuthPart} from './store/auth.reducer';
 
 @Component({
@@ -65,6 +65,7 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
      */
 
     dismissCloseMessageSubscription: Subscription;
+    storeSelectSubscription: Subscription;
 
     constructor(
         private myAuthService: AuthService,
@@ -101,8 +102,17 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
 
         // NGRX(Effects) biz here in OnInit() ??? << Nah << Hah! Actually, actually, I was RITE!
         // Max (AT FIRST) does it not here but down in myOnSubmit() - THEN he moves it up to ngOnInit(). cheers.
+        /*
+        Update. Lect. 372 ~00:51
+        Max does NOT assign store.select() onto an Observable$. No. He directly does .subscribe() off the .select(). Bueno.
+        But! Now Max does introduce a Subscription (and NgOnDestroy .unsubscribe()). Okay. We'll do that too.
+         */
+/* No. Did work. Just a WR__ thing
         this.myStoreAuthObservable$ = this.myStore.select(fromRoot.getAuthState);
-        this.myStoreAuthObservable$.subscribe(
+        this.myStoreAuthObservable$.subscribe( ...
+*/
+        this.storeSelectSubscription = this.myStore.select(fromRoot.getAuthState)
+            .subscribe(
             (authStateWeGot: StateAuthPart) => {
                 this.isLoading = authStateWeGot.myIsLoading;
                 this.errorToDisplay = authStateWeGot.myAuthError;
@@ -166,7 +176,7 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
             return; // << tsk, tsk, monsieur Le Hacker!
         }
 
-        this.isLoading = true;
+        this.isLoading = true; // << Prob. is done by NGRX/EFFECTS now yes ?
 
         console.log('formIGot.value ', formIGot.value);
         // Yeah. {myEmailFormControlName: "necessary2@cat.edu", myPasswordFormControlName: "iamacat3"}
@@ -179,7 +189,18 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
                 }
 */
             this.myStore.dispatch(new LogInStartEffectActionClass(
-                // dispatch does not return an Observable... TODO re: how we know when done or error etc.
+                // dispatch does not return an Observable...
+                /* TODONE re: Q. How we know when done, or error etc.?
+                Seeing as here in the calling Component, we just kind of "fire & forget" it seems...
+                A. That logic is over in auth.effects.ts: myAuthLoginStartEffect
+                where we .pipe() off the NgRx/Effects ACTIONS$ object:
+                OVER IN EFFECTS, we do all this:
+                - httpClient POST & Response
+                - then dispatch *another* Action (LOG_IN_ACTION)("SUCCESS")
+                - handle catchError() on INNER .pipe()
+                - if error, dispatch *another* Action (LOG_IN_FAIL_EFFECT_ACTION)
+                - RETURN an Observable w. any error msg. Do NOT throw any Error.
+                 */
                 {
                     email: formIGot.value.myEmailFormControlName,
                     password: formIGot.value.myPasswordFormControlName,
@@ -221,13 +242,25 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
             doesn't have to be ( ? ) a Subscription. Hmm.
             And, yeah, we will (below) do a .subscribe() off of that Observable. Cheers.
              */
+            // NGRX/EFFECTS
+            this.myStore.dispatch(new AuthActions.SignUpStartEffectActionClass(
+                // Recall: .dispatch() does NOT return an Observable... "fire & forget"...
+                // See above discussion at login() re: how EFFECTS takes care of logic
+                {
+                    email: formIGot.value.myEmailFormControlName,
+                    password: formIGot.value.myPasswordFormControlName,
+                }
+            )
+            );
+/* NO LONGER using AuthService.   Now NGRX/EFFECTS (above)
             this.myAuthObservable = this.myAuthService.signup(
                 {
                     email: formIGot.value.myEmailFormControlName,
                     password: formIGot.value.myPasswordFormControlName,
                 }
             );
-        } else {
+*/
+        } else { // We now NEVER get in here. (above else test is TRUE)
             /* 01
             Originally had (still does!) the .subscribe() here, so, can
             *not* assign what's returned to our Observable, no.
@@ -377,8 +410,22 @@ localId: "LdfKHjIaVldC1WkNWhMOz2xe8e83"  << yes on User
     }
 
     dismissErrorToDisplay() {
+        /* Lect. 372 ~01:13
+        MAX Code calls onHandleError()
+             this.error = null;
+
+         Point is, this method here in Component
+         now is duplicating State Management
+         that we prefer to be all w. NGRX.
+         Time to create (yet another) Action: CLEAR_ERROR
+         */
+
+        this.myStore.dispatch(new ClearErrorActionClass());
+
         // Plain Old DOM Element (e.g. <div>)
+/* No longer like so. NGRX instead
         this.errorToDisplay = null;
+*/
     }
 
     myAuthDismissError() {
@@ -428,8 +475,14 @@ localId: "LdfKHjIaVldC1WkNWhMOz2xe8e83"  << yes on User
     }
 
     ngOnDestroy(): void {
+
         if (this.dismissCloseMessageSubscription) { // Test whether we have one! Muy importante.
             this.dismissCloseMessageSubscription.unsubscribe();
+        }
+
+        if (this.storeSelectSubscription) {
+            // We really do expect to have this subscription, but can't hurt to do the "if" check
+            this.storeSelectSubscription.unsubscribe();
         }
     }
 }

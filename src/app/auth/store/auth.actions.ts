@@ -11,6 +11,10 @@ export const LOG_IN_FAIL_EFFECT_ACTION = '[Auth] Login Fail Effect Action';
 
 export const LOG_OUT_ACTION = '[Auth] Logout Action'; // 'LOG_OUT_ACTION';
 
+export const SIGN_UP_START_EFFECT_ACTION = '[Auth] SignUp Start Effect Action';
+
+export const CLEAR_ERROR_ACTION = '[Auth] Clear Error';
+
 // ***************************************
 
 export class LogInStartEffectActionClass implements Action {
@@ -29,7 +33,7 @@ export class LogInFailEffectActionClass implements Action {
     // string is just an error message...
 }
 
-export class LogInActionClass implements Action {
+export class LogInActionClass implements Action { // << could/should be renamed LoginSUCCESSActionClass
     readonly type = LOG_IN_ACTION;
     constructor(
         // public myPayload: User // << No. has extra stuff like get token()
@@ -47,8 +51,26 @@ export class LogOutActionClass implements Action {
     constructor( ) {  } // no myPayload, I expect
 }
 
+export class SignUpStartEffectActionClass implements Action {
+    readonly type = SIGN_UP_START_EFFECT_ACTION;
+    constructor(
+        public myPayload: {
+            email: string,
+            password: string,
+        }
+    ) {
+    }
+}
+
+export class ClearErrorActionClass implements Action { // Q. Is this an Effect ? A. I don't think so. Hmm.
+    readonly type = CLEAR_ERROR_ACTION;
+    constructor() { } // no payload ? << right.
+}
+
 export type AuthActionsUnionType =
       LogInActionClass
     | LogOutActionClass
     | LogInStartEffectActionClass
-    | LogInFailEffectActionClass;
+    | LogInFailEffectActionClass
+    | SignUpStartEffectActionClass
+    | ClearErrorActionClass;

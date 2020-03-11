@@ -393,7 +393,12 @@ autoLogOut expirationDuration  3346540 ~= 55.8 minutes
 /* No longer. Now NGRX
         this.userSubject$.next(null);
 */
+/*
+No longer no longer. Now NGRX Effects - called directly from Component Header, not from Service
+ */
+/*
         this.myStore.dispatch(new fromAuthActions.LogOutActionClass());
+*/
 
         // Maybe do navigate here too; for now, over on HeaderComponent y not
         this.myRouter.navigate(['/auth'])
@@ -450,7 +455,7 @@ error: "Could not parse auth token."'
         );
     }
 
-    private handleAuthentication(
+    private handleAuthentication( // << Now refactored over to auth.effects.ts
         // I'd first done without *Typing* these incoming params, but better to do with. Cheers.
         email: string,
         userLocalId: string,
@@ -495,6 +500,10 @@ error: "Could not parse auth token."'
 /*  No longer. Now NGRX STORE - our User object for "Authenticated" state
         this.userSubject$.next(thisHereUser);
 */
+/* No longer no longer. Now NGRX/EFFECTS takes care of
+dispatching this Action to "finalize/complete" the LogIn
+auth.effects.ts
+ */
         this.myStore.dispatch(new fromAuthActions.LogInActionClass(
             // thisHereUser // << NO, not User object
             {

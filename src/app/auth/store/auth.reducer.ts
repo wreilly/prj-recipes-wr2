@@ -12,18 +12,20 @@ import * as fromAuthActions from './auth.actions';
 
 export interface StateAuthPart {
     /*
-N.B. This app (Recipes) uses a *** User object ***
+N.B. Authenticated? t/f y/n
+- This app (Recipes) uses a *** User object ***
 to signify authenticated state
-(is there a User object? if so, auth state is true)
+ Q. Is there a User object ("truthy")?
+ A. If yes, auth state is true.
 /Users/william.reilly/dev/Angular/Udemy-Angular5-MaxS/2019/WR__/prj-recipes-wr2/src/app/auth/store/auth.reducer.ts
 
-Contrast the Fitness Tracker app which uses *** boolean ***
+- Contrast the Fitness Tracker app which uses *** boolean ***
 re: authenticated state (is logged in: Y/N T/F)
 /Users/william.reilly/dev/Angular/Udemy-AngularMaterial-MaxS/2019/WR__2/fitness-tracker-wr3/src/app/auth/auth.reducer.ts
  */
     myAuthedUser: User;
     myAuthError: string; // new bit of state, now w. ngrxEffects re: Login Fail Lect. 368
-    myIsLoading: boolean; // another bit of (U/I) state; perhaps temporarily here in Auth
+    myIsLoading: boolean; // another bit of (U/I) state; perhaps temporarily here in AuthReducer
 }
 
 const initialStateAuthPart: StateAuthPart = {
@@ -36,9 +38,15 @@ export function authReducer(
     ngrxState: StateAuthPart = initialStateAuthPart,
     ngrxAction: fromAuthActions.AuthActionsUnionType
 ): StateAuthPart {
+
     console.log('ngrxState in AUTH ', ngrxState);
+
     switch (ngrxAction.type) {
-        case fromAuthActions.LOG_IN_START_EFFECT_ACTION: // '[Auth] Login Start Effect Action':
+        case fromAuthActions.LOG_IN_START_EFFECT_ACTION:
+        case fromAuthActions.SIGN_UP_START_EFFECT_ACTION:
+            // above 2 lines example of switch/case "fall-through" - both use same logic:
+
+            // '[Auth] Login Start Effect Action':
             // Kinda pass-through simply, to "Start"...
             return {
                 ...ngrxState,
@@ -57,8 +65,7 @@ export function authReducer(
             };
             // break;
 
-        case fromAuthActions.LOG_IN_ACTION:
-
+        case fromAuthActions.LOG_IN_ACTION: // "Success" could be named
 /* No. Not "copying" out of the gate here. Hold onto your horses. (The "copy" gets done on that "..." spread operator below)
             // 1. MAKE A COPY! << Nah
             const myStateToBeUpdatedACopyObjectViaAssign: StateAuthPart = ngrxState; // { myAuthedUser: null };
@@ -114,7 +121,8 @@ export function authReducer(
             return {
                 ...ngrxState,
                 // isLoggedIn: true, // << Nope, not boolean
-                myAuthedUser: myStateToBeUpdatedACopyObjectViaAssign.myAuthedUser // myPayload.value, // TODO << temporarily just use null
+                myAuthedUser: myStateToBeUpdatedACopyObjectViaAssign.myAuthedUser // myPayload.value,
+                // TODOnope << temporarily just use null
             };
 */
 
@@ -123,6 +131,12 @@ export function authReducer(
                 ...ngrxState,
                 myAuthedUser: null, // SET to null. Done.
                 myAuthError: null, // reset
+            };
+
+        case fromAuthActions.CLEAR_ERROR_ACTION:
+            return {
+                ...ngrxState,
+                myAuthError: null, // clear it
             };
 
         default:

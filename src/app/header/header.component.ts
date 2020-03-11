@@ -7,6 +7,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { Store } from '@ngrx/store';
 import * as fromRoot from '../store/app.reducer';
+import * as AuthActions from '../auth/store/auth.actions';
 
 import { DataStorageService } from '../shared/data-storage.service';
 import { AuthService } from '../auth/auth.service';
@@ -236,7 +237,11 @@ No Longer:
   myLogout() {
     // simply take care of local boolean right here:
     this.isAuthenticated = false;
+/* No longer to Service (NGRX Effects instead)
+
     this.myAuthService.logOut(); // Service attends to other things...
+*/
+      this.myStore.dispatch(new AuthActions.LogOutActionClass());
   }
 
   ngOnDestroy(): void {
