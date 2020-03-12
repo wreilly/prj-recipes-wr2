@@ -333,6 +333,8 @@ isTrusted: true
                 exhaustMap(
                     (isItThatAuthedUser) => {
                         console.log('isItThatAuthedUser ', isItThatAuthedUser);
+                        // console.log('isItThatAuthedUser.token GETTER ', isItThatAuthedUser.token);
+                        // console.log('isItThatAuthedUser._token private var ', isItThatAuthedUser._token); // << No can do...
 
                         if (!isItThatAuthedUser) {
                             return next.handle(req);

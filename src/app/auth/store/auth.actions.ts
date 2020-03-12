@@ -4,10 +4,20 @@ import {User} from '../user.model';
 // Now w @ngrx/effects, new Actions:
 export const LOG_IN_START_EFFECT_ACTION = '[Auth] Login Start Effect Action';
 
+/* WAS CALLED:
 export const LOG_IN_ACTION = '[Auth] Login Action'; // 'LOG_IN_ACTION';
-// TODO Above could now be renamed "LOG_IN_SUCCESS_ACTION" ... we'll see...
+*/
+// NOW IS:
+export const AUTHENTICATE_SUCCESS_ACTION = '[Auth] Login/Signup/AutoLogin Action'; // 'AUTHENTICATE_SUCCESS_ACTION';
+// TODONE Above could now be renamed "LOG_IN_SUCCESS_ACTION" ... we'll see...
+// OK we'll rename to AUTHENTICATE_SUCCESS_ACTION (like MAX Code)
+// This gets invoked by 1) autoLogin() and 2) by both login() and signup() (via handleAuthentication())
+
 
 export const LOG_IN_FAIL_EFFECT_ACTION = '[Auth] Login Fail Effect Action';
+// I'll just keep this as LOG_IN_FAIL rather than AUTHENTICATE_FAIL... fer now leastways
+
+export const AUTO_LOG_IN_ACTION = '[Auth] Auto Login Action';
 
 export const LOG_OUT_ACTION = '[Auth] Logout Action'; // 'LOG_OUT_ACTION';
 
@@ -34,7 +44,7 @@ export class LogInFailEffectActionClass implements Action {
 }
 
 export class LogInActionClass implements Action { // << could/should be renamed LoginSUCCESSActionClass
-    readonly type = LOG_IN_ACTION;
+    readonly type = AUTHENTICATE_SUCCESS_ACTION;
     constructor(
         // public myPayload: User // << No. has extra stuff like get token()
     public myPayload: {
@@ -46,9 +56,14 @@ export class LogInActionClass implements Action { // << could/should be renamed 
     ) {  }
 }
 
+export class AutoLoginActionClass implements Action {
+    readonly type = AUTO_LOG_IN_ACTION;
+    constructor() { }  // no myPayload
+}
+
 export class LogOutActionClass implements Action {
     readonly type = LOG_OUT_ACTION;
-    constructor( ) {  } // no myPayload, I expect
+    constructor( ) {  } // no myPayload
 }
 
 export class SignUpStartEffectActionClass implements Action {
@@ -73,4 +88,5 @@ export type AuthActionsUnionType =
     | LogInStartEffectActionClass
     | LogInFailEffectActionClass
     | SignUpStartEffectActionClass
-    | ClearErrorActionClass;
+    | ClearErrorActionClass
+    | AutoLoginActionClass;

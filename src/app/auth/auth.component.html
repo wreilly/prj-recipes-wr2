@@ -168,12 +168,15 @@ type is the appPutThingHereDirective Directive
                     type="button"
                     on-click="mySwitchMode()"
             >Switch to {{ isLoginMode ? ' Sign Up' : ' Log In' }}</button>
+<!-- TODO (mebbe) W. NGRX this is a buncha work to re-institute, for not big payoff. we'll see.
+bind-disabled="!isLoginMode" -->
             <hr />
             <button class="btn btn-success"
                     type="button"
-                    bind-disabled="!isLoginMode"
+                    bind-disabled="isEZPassTurnedOff"
                     on-click="myEZPassLogin()"
-            >EZ-Pass Login!</button>
+            >{{ isEZPassTurnedOff ? 'Sorry no EZPass now!' : 'EZ-Pass Login!'}}</button>
+
         </form>
     </div>
 </div>

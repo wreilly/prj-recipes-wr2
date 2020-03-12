@@ -9,7 +9,7 @@ import { User } from '../user.model';
 
 import { environment } from '../../../environments/environment';
 import * as AuthActions from './auth.actions';
-// import {AuthService} from '../auth.service'; // not used seems
+import {AuthService} from '../auth.service'; // Hah! now we do, for logging out // not used seems
 
 
 /* TABLE OF CONTENTS
@@ -31,12 +31,20 @@ export class AuthEffects { ...
 myAuthLoginStartEffect
 
 2.
-@Effect()
+@Effect({dispatch: false})
 myAuthSuccessRedirectEffect
 
 3.
 @Effect()
 myAuthSignUpStartEffect
+
+4.
+@Effect()
+myAuthAutoLoginEffect
+
+5.
+@Effect({dispatch: false})
+myAuthLogoutEffect
 
 // N.B. constructor() on BOTTOM, fwiw
  */
@@ -195,6 +203,15 @@ export class AuthEffects { // N.B. constructor() on BOTTOM, fwiw
                             returnSecureToken: true,
                         }
                     ).pipe( // INNER .pipe() Lect. 366 ~07:17
+                        tap( // Lect. 374 ~03:34 Same for LoginStart and for SignUpStart
+                            (authResponseDataWeGot) => {
+/* Used for TESTING! Just 3.6 seconds. PASS :o)
+                                this.myAuthService.setLogOutTimer(+authResponseDataWeGot.expiresIn); // * 1000);
+*/
+                                this.myAuthService.setLogOutTimer(+authResponseDataWeGot.expiresIn * 1000);
+                                // 1. don't forget '+'; 2. milliseconds requires * 1000
+                            }
+                        ),
                         map( // "map() automatically wraps what is returned into an Observable..."
                             // and so, no need herein to do an 'of()' to create an Observable. cheers.
 
@@ -359,7 +376,7 @@ __proto__: HttpResponseBase
         // << This Effect does NOT dispatch a new action. Nope.
     myAuthSuccessRedirectEffect = this.myEffectActions$.pipe(
         ofType(
-            AuthActions.LOG_IN_ACTION,
+            AuthActions.AUTHENTICATE_SUCCESS_ACTION,
             AuthActions.LOG_OUT_ACTION,
         ), // << "Log In Success" action, could be named...
         tap(
@@ -392,7 +409,7 @@ _tokenExpirationDate: Mon Mar 09 2020 07:18:52 GMT-0400 (Eastern Daylight Time) 
             // Next line: AuthComponent dispatches this action, passing email, password as payload:
             (authDataWeGot: AuthActions.SignUpStartEffectActionClass) => {
                 console.log('authDataWeGot SIGNUP EFFECT', authDataWeGot);
-                return this.myHttpClient.post(
+                return this.myHttpClient.post<AuthResponseData>(
                     'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + environment.firebaseAPIKeyWR__,
                     {
                         email: authDataWeGot.myPayload.email,
@@ -400,6 +417,12 @@ _tokenExpirationDate: Mon Mar 09 2020 07:18:52 GMT-0400 (Eastern Daylight Time) 
                         returnSecureToken: true,
                     }
                 ).pipe(
+                    tap( // Lect. 374 ~03:34 Same for LoginStart and for SignUpStart
+                        (authResponseDataWeGot: AuthResponseData) => {
+                            this.myAuthService.setLogOutTimer(+authResponseDataWeGot.expiresIn * 1000);
+                            // 1. don't forget '+'; 2. milliseconds requires * 1000
+                        }
+                    ),
                     map( // returns an Observable.
                     (authResponseDataWeGotFromFirebase: AuthResponseData) => {
                         console.log('authResponseDataWeGotFromFirebase SIGNUP ', authResponseDataWeGotFromFirebase);
@@ -482,14 +505,192 @@ refreshToken: "AEu4IL0 ... arwsI"
                 ); // /.pipe() INNER
             }
         ) // /switchMap
-    ); // /.pipe() OUTER
+    ); // /.pipe() OUTER myAuthSignUpStartEffect
 
+
+    // 4.  *************************************************************
+    @Effect()
+    myAuthAutoLoginEffect = this.myEffectActions$.pipe(
+        ofType(AuthActions.AUTO_LOG_IN_ACTION),
+        map( // returns an Observable - good
+            () => {
+                if (localStorage.getItem('myUserData') === null) {
+                    console.log('No myUserData in localStorage!');
+                    // if no valid token on that User in localStorage:
+                    return { type: 'DUMMY_IDENTIFIER No myUserData'}; // Lect. 373 ~07:24
+                }
+
+                if (localStorage.getItem('myUserData') !== null) {
+                    const heyWeAreLoggedInUserDataString: string = localStorage.getItem('myUserData');
+                    console.log('heyWeAreLoggedInUserDataString ', heyWeAreLoggedInUserDataString);
+                    /*
+                    email: "necessary@cat.edu"
+            id: "hMv51L1tHof1paEgJe9ZEjUVhH82"
+            _token: "eyJhbG...CNywVQ"
+            _tokenExpirationDate: "2020-01-05T14:39:34.039Z"
+                     */
+                    const loggedInUserObjectLiteral: {
+                        /* N.B. Object literal, obtained via JSON.parse()
+                        The "date" here is still just a string.
+                        (We make to a Date further below, when we new User()
+                        a real User Object, vs. this sort of interim Object literal. cheers.
+                        */
+
+                        // Let's explicitly show the Type we get,
+                        // once we "JSON.parse()" the string that we got back out of localStorage:
+                        email: string;
+                        id: string;
+                        _token: string;
+                        _tokenExpirationDate: string; // << all strings, not a Date
+                    } = JSON.parse(heyWeAreLoggedInUserDataString);
+
+                    /* Nope. Almost. Good idea. But,
+                          instead of going into that "handler"
+                          (which basically just does new User()),
+                          we'll just do our own new User() right here (below)
+
+                                this.handleAuthentication(
+                                    loggedInUserObjectLiteral.email,
+                                    loggedInUserObjectLiteral.id,
+                                    loggedInUserObjectLiteral._token,
+                                    new Date(loggedInUserObjectLiteral._tokenExpirationDate)
+                                );
+                    */
+
+                    const thisHereAutoLogInUser = new User(
+                        loggedInUserObjectLiteral.email,
+                        loggedInUserObjectLiteral.id,
+                        loggedInUserObjectLiteral._token,
+                        new Date(loggedInUserObjectLiteral._tokenExpirationDate)
+                    );
+
+                    console.log('thisHereAutoLogInUser ', thisHereAutoLogInUser);
+                    /*
+                    Good. I have test situation here where:
+                     There IS localStorage user,
+                     but,
+                     The token is EXPIRED (12/Jan/20 - today is 13/Jan/20).
+                    Bueno.
+                    We are Not Logged In (correct-a-mundo)
+                     */
+
+                    if (thisHereAutoLogInUser.token) {
+                        /*
+                        Now that we've got a real User object, we get the .token GETTER. Cheers.
+                        And, we (below) use the result from that .token GETTER,
+                        to simply determine whether the token that the localStorage
+                         User has is still valid ("live") or not
+                        If still good (not older than 3,600 seconds = 1 hour),
+                        then we are good to go.
+                        If token is too old, user will NOT get AutoLogIn and has to
+                        do regular Log In.
+
+                        Hmm: We save the exact same User data back in to localStorage,
+                        including that TokenExpiration if I am not mistaken. Hmmmmmmm.
+                         */
+
+                        /* No longer. Now NGRX
+                                        this.userSubject$.next(thisHereAutoLogInUser);
+                        */
+
+                        /*
+                        CALCULATE the LogOutTimer DURATION in milliseconds
+                        - Go back to the "loggedInUserObjectLiteral" to get the STRING value
+                        for the "._tokenExpirationDate" (some large number of milliseconds since 1970)
+                        - Subtract from that number the milliseconds for *now*, to get "duration" result
+                        - If token still valid (expiration still in *future*) that "duration" number should be positive
+                        (See more Commented notes in AuthService.autoLogIn() )
+                         */
+                        const myLogOutTimerExpirationDuration = new Date(loggedInUserObjectLiteral._tokenExpirationDate).getTime() -
+                            new Date().getTime();
+                        this.myAuthService.setLogOutTimer(myLogOutTimerExpirationDuration);
+
+                        localStorage.setItem('myUserData', JSON.stringify(thisHereAutoLogInUser));
+                        /*
+                        LOCALSTORAGE << Do we do this, here ??
+            --------------
+            myUserData
+
+            email: "necessary@cat.edu"
+            id: "hMv51L1tHof1paEgJe9ZEjUVhH82"
+            _token: "eyJhbG...CNywVQ"
+            _tokenExpirationDate: "2020-01-05T14:39:34.039Z"
+            --------------
+                         */
+
+/* Refactored here from AuthService, which DID use Store and .dispatch()
+                        this.myStore.dispatch(new AuthActions.LogInActionClass(
+*/
+// But here in NGRX/Effects, we just want to return a newed up Action/Effect. NGRX does dispatch automatically.
+                        return new AuthActions.LogInActionClass(
+                            // thisHereAutoLogInUser // << No. Not a User object
+                            {
+                                email: thisHereAutoLogInUser.email,
+                                id: thisHereAutoLogInUser.id,
+                                _token: thisHereAutoLogInUser.token,
+                                _tokenExpirationDate: new Date(loggedInUserObjectLiteral._tokenExpirationDate)
+                            }
+                        );
+                    } else {
+                        // if no valid token on that User in localStorage:
+                        return { type: 'DUMMY_IDENTIFIER No valid token on myUserData'}; // Lect. 373 ~07:24
+                    }
+                }
+            }), // /map()
+    ); // /.pipe OUTER myAuthAutoLoginEffect
+
+
+    // 5.  **************************************************************
+    @Effect({dispatch: false})
+    myAuthLogoutEffect = this.myEffectActions$.pipe(
+        ofType(AuthActions.LOG_OUT_ACTION),
+        tap(
+            (whatDidWeGet) => {
+                console.log('whatDidWeGet ', whatDidWeGet);
+
+                localStorage.removeItem('myUserData');
+
+/* Nah - I forget what the hell this timeout thing even is. Sheesh.
+Hmm, guess is setTimeout() on autoLogout. Hmm okay...
+
+                if (this.myTimeoutId) {
+                    clearTimeout(this.myTimeoutId);
+                }
+                this.myTimeoutId = null;
+*/
+                // Even if there was no timer, just set to null anyway
+
+                this.myAuthService.clearLogoutTimer();
+
+                /*
+                One more thing to do (not so intuitive):
+                Clear the LOCAL Recipe[].
+                Q. Why?
+                A. So that the user experience is consistent.
+                - necessary@cat.edu logs in, fetches Recipes from Canonical Firebase, good.
+                - Logs out, okay.
+                - Does NOT refresh/reload page/app.
+                - Logs in again - **the Recipes are already there** - from LOCAL.
+                - Possible that those LOCAL are STALE, not up to date, not Canonical ("of record").
+                Improvement: Require/force user to Fetch Recipes anew, upon new LogIn.
+                 */
+/* Guess was sort of Nice To Have ( ? ) not doing here in NGRX Effects. Hmm. ???
+                this.myRecipeService.setRecipes([]); // << CLEAR/EMPTY the Local Recipe[], upon LogOut.
+*/
+
+                /* Wrong: We ARE doing this redirect here.  was: Nah not doing this redirect biz here */
+                this.myRouter.navigate(['/auth'])
+                    .then(goodOrBad => console.log(goodOrBad)); // e.g. true
+
+            }
+        )
+    ); // /.pipe() OUTER  /myAuthLogoutEffect
 
 
     constructor(
         private myEffectActions$: Actions, // << from ngrx/Effects
         private myHttpClient: HttpClient,
-        // private myAuthService: AuthService, // not used seems
+        private myAuthService: AuthService, // now we do for logging out// not used seems
         private myRouter: Router,
     ) { }
 

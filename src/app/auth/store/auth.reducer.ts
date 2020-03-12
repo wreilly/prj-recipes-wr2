@@ -65,16 +65,16 @@ export function authReducer(
             };
             // break;
 
-        case fromAuthActions.LOG_IN_ACTION: // "Success" could be named
+        case fromAuthActions.AUTHENTICATE_SUCCESS_ACTION: // "Success" could be named
 /* No. Not "copying" out of the gate here. Hold onto your horses. (The "copy" gets done on that "..." spread operator below)
             // 1. MAKE A COPY! << Nah
             const myStateToBeUpdatedACopyObjectViaAssign: StateAuthPart = ngrxState; // { myAuthedUser: null };
             Object.assign(myStateToBeUpdatedACopyObjectViaAssign, ngrxState); // << State passed in, in Action!
             << NO that is not right. ngrxState is the Store State. Not any "passed-in" state.
 */
-            console.log('TYPEOF ?? LOG_IN_ACTION ngrxAction.myPayload: ', ngrxAction.myPayload);
-// TODO            typeof (ngrxAction.myPayload) === User;
-            console.log('LOG_IN_ACTION ngrxAction.myPayload: ', ngrxAction.myPayload);
+            // tslint:disable-next-line:max-line-length
+            // console.log('TYPEOF ?? AUTHENTICATE_SUCCESS_ACTION ngrxAction.myPayload: ', typeof ngrxAction.myPayload); // object << hmm, not that useful. doesn't tell me "User"  o well.
+            console.log('AUTHENTICATE_SUCCESS_ACTION ngrxAction.myPayload: ', ngrxAction.myPayload);
             /* Looks good:
             User {email: "wednesday@week.com",
             id: "hLzaGHeZUzPG8Stsp1YyGYFGU4z1",

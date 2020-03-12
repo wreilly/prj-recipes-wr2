@@ -7,7 +7,7 @@ import { Store } from '@ngrx/store';
 import * as fromRoot from '../store/app.reducer';
 import * as AuthActions from './store/auth.actions';
 
-import { AuthService, AuthResponseData } from './auth.service';
+import { AuthService } from './auth.service'; // no longer: AuthResponseData
 
 import { AlertComponent } from '../shared/alert/alert.component';
 import { PutThingHereDirective } from '../shared/put-thing-here/put-thing-here.directive';
@@ -34,6 +34,7 @@ export class AuthComponent implements OnInit, OnDestroy {
 
     One form can do both functions. The user clicks button to choose.
      */
+    isEZPassTurnedOff = true; // TODO mebbe - we're turning this off for now (NRGX etc.)
 
     isLoading = false; // spinner-biz
 
@@ -50,7 +51,9 @@ export class AuthComponent implements OnInit, OnDestroy {
      */
     nowAmDoneWith = false;
 
+/* No longer using. Now NGRX
     myAuthObservable: Observable<AuthResponseData>; // BOTH log in and sign up
+*/
     errorToDisplay: string = null;
 
     myStoreAuthObservable$: Observable<any>;
@@ -128,7 +131,7 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
 
     } // /ngOnInit()
 
-    myEZPassLogin() {
+    myEZPassLogin() { // TODO mebbe. Turned off for now, maybe for good... t.b.d.
         /*
         Hard-Coded one-click login:
         wednesday@week.com
@@ -141,23 +144,28 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
          */
         this.isLoading = true;
 
+/* While turned off, Comment Out, don't call authService.login() anymore
+IF we ever re-jig this, need to make this also use NGRX. cheers.
+
         this.myAuthObservable = this.myAuthService.logIn(
             {
                 'email': 'wednesday@week.com',
                 'password': 'asdf99',
             }
         );
+*/
 
+/* Comment this out too...
         this.myAuthObservable.subscribe(
             (whatEver) => {
                 console.log('whatEver AuthResponseData ', whatEver);
-                /*
+                /!*
                 {kind: "identitytoolkit#VerifyPasswordResponse",
                 localId: "hLzaGHeZUzPG8Stsp1YyGYFGU4z1",
                 email: "wednesday@week.com",
                 displayName: "",
                 idToken: "eyJhbGciOiJSUzI1NiIsYmU0ZT…TbddaFZngLbpNRhK-T337eMt5ylm9N4KPAWU0FAvjTMZ7UYSQ", …}
-                 */
+                 *!/
 
                 this.myRouter.navigate(['/recipes']);
                 // short, sweet. see below for proper full Promise
@@ -166,6 +174,7 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
                 this.isLoading = false;
             }
         );
+*/
     }
 
     myOnSubmit(formIGot) {
@@ -196,7 +205,7 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
                 where we .pipe() off the NgRx/Effects ACTIONS$ object:
                 OVER IN EFFECTS, we do all this:
                 - httpClient POST & Response
-                - then dispatch *another* Action (LOG_IN_ACTION)("SUCCESS")
+                - then dispatch *another* Action (AUTHENTICATE_SUCCESS_ACTION)("SUCCESS")
                 - handle catchError() on INNER .pipe()
                 - if error, dispatch *another* Action (LOG_IN_FAIL_EFFECT_ACTION)
                 - RETURN an Observable w. any error msg. Do NOT throw any Error.
@@ -267,6 +276,7 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
             You could assign what's returned to a Subscription (we are not doing
             that here).
              */
+/* NO LONGER. Now NGRX etc.
             this.myAuthService.signup( // << NO LONGER USING
                 {
                     email: formIGot.value.myEmailFormControlName,
@@ -277,7 +287,7 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
                 .subscribe(
                     (authIGot) => {
                         console.log('authIGot ', authIGot); // yep {name: "-Lx1Ar8pZC-_Sq08W-P2"}
-                        /* Woot.
+                        /!* Woot.
                         authIGot
     kind: "identitytoolkit#SignupNewUserResponse"
     idToken: "eyJhbGciOiJSUzI1NiIsImtp ... T8g5FFwQWtPYg"
@@ -285,20 +295,21 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
     refreshToken: "AEu4IL3Y465BDYz0p1ONYV...bm1ax78PvETNmU"
     expiresIn: "3600"
     localId: "ba6AFJGd5AVdTpiUbnPdRSNoYXt1"
-                         */
+                         *!/
                         this.isLoading = false;
                     },
                     (errIfAny) => {
                         console.log('errIfAny in Component ', errIfAny); // yes, WAS whole HttpErrorResponse {}
-                        /*
+                        /!*
                         errIfAny in Component  HttpErrorResponse {headers: HttpHeaders, status: 404, statusText:
                         "Not Found", url: "https://foobarw
-                         */
+                         *!/
                         // this.errorToDisplay = errIfAny.error.error.message;
                         this.errorToDisplay = errIfAny; // NOW this is the error essage string only = good, what you want.
                         this.isLoading = false;
                     }
                 );
+*/
         }
 
         /*
@@ -334,10 +345,13 @@ It simply exposes ('public') a ViewContainerRef. But that is just what we need. 
     .subscribe(userWeGot => this.isAuthenticated = !!userWeGot);
 
              */
+
+// ********** COMMENT OUT  ********************************
+/*
             this.myAuthObservable.subscribe( // << We don't want to trigger this .subscribe anymore. see 'false' above
                 (whatIGot) => {
                     console.log('whatIGot ', whatIGot); // yes
-                    /* N.B. This is just "AuthResponseData" - NOT a User (object)
+                    /!* N.B. This is just "AuthResponseData" - NOT a User (object)
 But it is plenty for us to know we are good to simply (below) navigate to /recipes etc.
 
 whatIGot: AuthResponseData
@@ -349,7 +363,7 @@ refreshToken: "AEu4..."
 expiresIn: "3600" << sort of yes on User ~ sort of - but on User it is a Date object
 localId: "LdfKHjIaVldC1WkNWhMOz2xe8e83"  << yes on User
 --------------------------
-                     */
+                     *!/
                     this.isLoading = false;
                     // TIME TO NAVIGUESS! ;o)
                     this.myRouter.navigate(['/recipes'])
@@ -365,11 +379,11 @@ localId: "LdfKHjIaVldC1WkNWhMOz2xe8e83"  << yes on User
                         },
                             (errWeGot) => {
                                 console.log('errWeGot navigating ', errWeGot);
-                                /* Yeah!
+                                /!* Yeah!
                                 error: "Permission denied"
 
                                 HttpErrorResponse {headers: HttpHeaders, status: 401, statusText: "Unauthorized", url: ...
-                                 */
+                                 *!/
                             });
                 }, // /.subscribe()'s ".next()"
                 (errIGot) => {
@@ -378,22 +392,25 @@ localId: "LdfKHjIaVldC1WkNWhMOz2xe8e83"  << yes on User
                     // this.errorToDisplay = JSON.stringify(errIGot);
                     this.errorToDisplay = errIGot; // JSON biz over on Service now, no longer here in Component. Cheers.
                     // Now this is the error message string only = good, what you want.
-                    /*
+                    /!*
                     Hmm. JSON.stringify() is good when we send whole [object Object]
                     But it does put double-quotes around it when we just get back a string. Looks little funny, but, acceptable.
                     << However, we did put the kabosh on it. No funny double-quotes, thank you.
-                     */
+                     *!/
 
-                    /* *********** LECT 313+ ****
+                    /!* *********** LECT 313+ ****
                     DYNAMIC COMPONENT for Error Modal Dialog
                     Programmatic etc.
 
-                     */
+                     *!/
                     this.myAuthShowErrorAlert(errIGot);
 
                     this.isLoading = false;
                 } // /.subscribe()'s ".error()"
             ); // /.subscribe() itself
+*/
+
+            // ********** /COMMENT OUT  ********************************
         }
 
         // After either Signup OR Login,

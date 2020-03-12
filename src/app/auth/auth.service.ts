@@ -6,7 +6,7 @@ import {Observable, throwError} from 'rxjs'; // No longer Subject; nor BehaviorS
 
 import { Store } from '@ngrx/store';
 import * as fromRoot from '../store/app.reducer';
-import * as fromAuthActions from '../auth/store/auth.actions';
+import * as AuthActions from '../auth/store/auth.actions';
 
 import {User} from './user.model';
 import { RecipeService } from '../recipes/recipe.service';
@@ -17,6 +17,7 @@ Angular automatically swaps in environment.prod.ts, when you do:
 $ ngserve build --prod
 */
 
+/*
 // NGRX EFFECTS. This interface will be moving OUT of the Service here...
 // (TO: auth.effects.ts, for starters)
 export interface AuthResponseData {
@@ -30,6 +31,7 @@ export interface AuthResponseData {
     registered?: boolean; // Log In, not Sign Up
 }
 // registered: boolean // << comes back on Log In, not Sign Up.
+*/
 
 @Injectable({
     providedIn: 'root',
@@ -88,18 +90,19 @@ export class AuthService {
 
     private myTimeoutId: number; // for autoLogOut()
 
+/* NO LONGER NOW NGRX etc.
     private static handleError(errInService: HttpErrorResponse): Observable<never> {
-        /*
+        /!*
         N.B. For Heck Of It
         I have also copied this 'handleError()' over to the Interceptor. Cheers.
 
         2020-03-09 Hmm, also copied/refactored over to Auth.Effects.ts
-         */
-        /*
+         *!/
+        /!*
         rxjs throwError "creates an Observable that never emits any value. Observable<never>
         Instead, it errors out immediately using the same error caught by catchError"
         https://blog.angular-university.io/rxjs-error-handling/
-         */
+         *!/
 
         let errorMessageToThrow = 'Something who knows what went wrong';
             console.error('errInService ', errInService); // yes whole HttpErrorResponse {}
@@ -129,13 +132,16 @@ export class AuthService {
 
         return throwError(errorMessageToThrow);
     } // /handleError()
+*/
 
+
+/* NO LONGER USED. NOW NGRX etc.
     signup(nameRankSerialNumber): Observable<AuthResponseData> { // >> Nah. : ObservableInput<AuthResponseData> {
         // console.log('nameRankSerialNumber 01 ', nameRankSerialNumber);
-        /*
+        /!*
 Nah:       {email: "necessary@cat.edu", password: "iamacat", returnSecureToken: true}
 Yeah:      {email: "necessary@cat.edu", password: "iamacat"} // << :o)
-         */
+         *!/
 
         // nameRankSerialNumber = nameRankSerialNumber.returnSecureToken = true; // << Nah!!!
         nameRankSerialNumber.returnSecureToken = true; // << More better
@@ -161,6 +167,9 @@ Yeah:      {email: "necessary@cat.edu", password: "iamacat"} // << :o)
             );
             // .pipe(); // << Q. ? just plain old empty pipe, needed ?? A. No.
     } // /signUp()
+*/
+
+/* NO LONGER. Now NGRX etc.
 
     logIn(nameRankSerialNumber): Observable<AuthResponseData> {
         console.log('01 NRSN ', nameRankSerialNumber);
@@ -169,11 +178,12 @@ Yeah:      {email: "necessary@cat.edu", password: "iamacat"} // << :o)
 
         console.log('02 NRSN ', nameRankSerialNumber);
 
-        /*
+        /!*
         NGRX EFFECTS - this HttpClient call now copied to auth.effects.ts
-         */
+         *!/
         // tslint:disable-next-line:max-line-length
-        return this.myHttpClient.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + environment.firebaseAPIKeyWR__,
+        return this.myHttpClient.post<AuthResponseData>
+        ('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + environment.firebaseAPIKeyWR__,
             nameRankSerialNumber
             )
             .pipe(
@@ -181,7 +191,7 @@ Yeah:      {email: "necessary@cat.edu", password: "iamacat"} // << :o)
                 tap(
                     (wholeThingWeGot) => {
                             console.log('66 Log In - TAP wholeThingWeGot ', wholeThingWeGot);
-                            /* LOOKS GOOD TO ME:
+                            /!* LOOKS GOOD TO ME:
 kind: "identitytoolkit#VerifyPasswordResponse"
 localId: "hMv51L1tHof1paEgJe9ZEjUVhH82"
 email: "necessary@cat.edu"
@@ -190,7 +200,7 @@ idToken: "eyJhbGci...tpab9wn-A"
 registered: true
 refreshToken: "AEu4IL2...j4JpVD7fxGbKAd38eSd_g8E_M"
 expiresIn: "3600"
-                             */
+                             *!/
                             this.handleAuthentication(
                                 wholeThingWeGot.email,
                                 wholeThingWeGot.localId,
@@ -209,6 +219,9 @@ expiresIn: "3600"
                 ), // /tap()
             ); // /.pipe()
     } // /login()
+*/
+
+/* NO LONGER NOW NGRX ETc.
 
     autoLogIn() { // Called at start: AppComponent - so, any browser reload any point in site comes through here ... (am purty sure)
 
@@ -222,17 +235,17 @@ expiresIn: "3600"
         if (localStorage.getItem('myUserData') !== null) {
             const heyWeAreLoggedInUserDataString: string = localStorage.getItem('myUserData');
             console.log('heyWeAreLoggedInUserDataString ', heyWeAreLoggedInUserDataString);
-            /*
+            /!*
             email: "necessary@cat.edu"
     id: "hMv51L1tHof1paEgJe9ZEjUVhH82"
     _token: "eyJhbG...CNywVQ"
     _tokenExpirationDate: "2020-01-05T14:39:34.039Z"
-             */
+             *!/
             const loggedInUserObjectLiteral: {
-                /* N.B. Object literal, obtained via JSON.parse()
+                /!* N.B. Object literal, obtained via JSON.parse()
                 The "date" here is still just a string.
                 (We make to a Date further below, when we new User() a real User Object, vs. this sort of interim Object literal. cheers.
-                */
+                *!/
 
                 // Let's explicitly show the Type we get,
                 // once we "JSON.parse()" the string that we got back out of localStorage:
@@ -242,7 +255,7 @@ expiresIn: "3600"
                 _tokenExpirationDate: string; // << all strings, not a Date
             } = JSON.parse(heyWeAreLoggedInUserDataString);
 
-/* Nope. Almost. Good idea. But,
+/!* Nope. Almost. Good idea. But,
       instead of going into that "handler"
       (which basically just does new User()),
       we'll just do our own new User() right here (below)
@@ -253,7 +266,7 @@ expiresIn: "3600"
                 loggedInUserObjectLiteral._token,
                 new Date(loggedInUserObjectLiteral._tokenExpirationDate)
             );
-*/
+*!/
 
             const thisHereAutoLogInUser = new User(
                 loggedInUserObjectLiteral.email,
@@ -263,17 +276,17 @@ expiresIn: "3600"
             );
 
             console.log('thisHereAutoLogInUser ', thisHereAutoLogInUser);
-            /*
+            /!*
             Good. I have test situation here where:
              There IS localStorage user,
              but,
              The token is EXPIRED (12/Jan/20 - today is 13/Jan/20).
             Bueno.
             We are Not Logged In (correct-a-mundo)
-             */
+             *!/
 
             if (thisHereAutoLogInUser.token) {
-                /*
+                /!*
                 Now that we've got a real User object, we get the .token GETTER. Cheers.
                 And, we (below) use the result from that .token GETTER,
                 to simply determine whether the token that the localStorage
@@ -294,12 +307,12 @@ expiresIn: "3600"
 
                 Hmm: We save the exact same User data back in to localStorage,
                 including that TokenExpiration if I am not mistaken. Hmmmmmmm.
-                 */
+                 *!/
 
-/* No longer. Now NGRX
+/!* No longer. Now NGRX
                 this.userSubject$.next(thisHereAutoLogInUser);
-*/
-                this.myStore.dispatch(new fromAuthActions.LogInActionClass(
+*!/
+                this.myStore.dispatch(new AuthActions.LogInActionClass(
                     // thisHereAutoLogInUser // << No. Not a User object
                     {
                         email: thisHereAutoLogInUser.email,
@@ -310,7 +323,7 @@ expiresIn: "3600"
                 ));
 
                 localStorage.setItem('myUserData', JSON.stringify(thisHereAutoLogInUser));
-                /*
+                /!*
                 LOCALSTORAGE
     --------------
     myUserData
@@ -320,11 +333,11 @@ expiresIn: "3600"
     _token: "eyJhbG...CNywVQ"
     _tokenExpirationDate: "2020-01-05T14:39:34.039Z"
     --------------
-                 */
+                 *!/
 
                 // AUTOLOGOUT Setup:
                 // Set that hour-long time going...
-                /*
+                /!*
                 Bit more involved here in AutoLogIn (vs. user manual LogIn),
                  to get the correct "expiresIn" number figure:
 
@@ -346,7 +359,7 @@ expiresIn: "3600"
                 Arithmetic:
                 The "then" of token expiration (presumably later) - now = some positive number
                 (The .getTime() gives you back milliseconds, btw.)
-                 */
+                 *!/
                 let expirationDurationFromLocalStorageFigure: number;
                 expirationDurationFromLocalStorageFigure = new Date(loggedInUserObjectLiteral._tokenExpirationDate)
                     .getTime() - new Date()
@@ -362,9 +375,9 @@ expiresIn: "3600"
                     .getTime() - new Date()
                     .getTime());
 
-                /*
+                /!*
 01 then  1578336832852
-02 now  1578333486313 ~= 50.048 years since 01/Jan/1970 (Unix Epoch) - Exact-a-mundo!
+02 now   1578333486313 ~= 50.048 years since 01/Jan/1970 (Unix Epoch) - Exact-a-mundo!
 
 .getTime(): NOW (06/Jan/2020)
 1578333486313 / 1000 / 60 / 60 / 24 / 365 ~= 50.048 years
@@ -378,7 +391,7 @@ autoLogOut expirationDuration  3346540 ~= 55.8 minutes
                   ^     ^
                 millis  secs
 
-                 */
+                 *!/
 
                 this.autoLogOut(
                     expirationDurationFromLocalStorageFigure
@@ -388,17 +401,19 @@ autoLogOut expirationDuration  3346540 ~= 55.8 minutes
             }
         }
     } // /autoLogIn()
+*/
 
-    logOut() {
-/* No longer. Now NGRX
+/* NO LONGER NOW NGRX Etc.
+    logOut() { // No longer called, here in Service
+/!* No longer. Now NGRX
         this.userSubject$.next(null);
-*/
-/*
-No longer no longer. Now NGRX Effects - called directly from Component Header, not from Service
- */
-/*
-        this.myStore.dispatch(new fromAuthActions.LogOutActionClass());
-*/
+*!/
+/!*
+No longer no longer. Now NGRX Effects - called directly from HeaderComponent, not from here in AuthService
+ *!/
+/!*
+        this.myStore.dispatch(new AuthActions.LogOutActionClass());
+*!/
 
         // Maybe do navigate here too; for now, over on HeaderComponent y not
         this.myRouter.navigate(['/auth'])
@@ -410,7 +425,7 @@ No longer no longer. Now NGRX Effects - called directly from Component Header, n
         this.myTimeoutId = null;
         // Even if there was no timer, just set to null anyway
 
-        /*
+        /!*
         One more thing to do (not so intuitive):
         Clear the LOCAL Recipe[].
         Q. Why?
@@ -421,13 +436,18 @@ No longer no longer. Now NGRX Effects - called directly from Component Header, n
         - Logs in again - **the Recipes are already there** - from LOCAL.
         - Possible that those LOCAL are STALE, not up to date, not Canonical ("of record").
         Improvement: Require/force user to Fetch Recipes anew, upon new LogIn.
-         */
+         *!/
         this.myRecipeService.setRecipes([]); // << CLEAR/EMPTY the Local Recipe[], upon LogOut.
 
     } // /logOut()
+*/
 
+
+/* RENAMED per NGRX Lect. 374 ~01:54
     autoLogOut(expirationDuration: number) { // milliseconds e.g. 3600 * 1000 = one hour
-        console.log('autoLogOut expirationDuration ', expirationDuration); // 3,600,000 one hour
+*/
+    setLogOutTimer(expirationDuration: number) { // milliseconds e.g. 3600 * 1000 = one hour
+        console.log('setLogOutTimer expirationDuration ', expirationDuration); // 3,600,000 one hour
         this.myTimeoutId = setTimeout(
             () => {
 
@@ -444,18 +464,30 @@ error: "Could not parse auth token."'
 
                 const whatTheySaid = confirm('You have been inactive for ' + expirationDuration / 1000 + ' seconds. About to log you out.');
                 if (whatTheySaid) {
+/* No longer this AuthService logOut() but now instead NGRX/Effects
                     this.logOut();
+*/
+                    this.myStore.dispatch(new AuthActions.LogOutActionClass());
                 } else {
                     alert('okay, another bloody hour, but that is it, pal.');
-                    this.autoLogOut(3600 * 1000); // another hour // (10000) ten seconds for testing
+                    // this.autoLogOut(3600 * 1000); // another hour // (10000) ten seconds for testing
+                    this.setLogOutTimer(3600 * 1000); // another hour // (10000) ten seconds for testing
                     // actually of course they can re-up for another hour as many times as they like...
                 }
             },
             expirationDuration // 10000 << test it for 10 seconds = PASS
         );
+    } // /setLogoutTimer()   was: /autoLogout()
+
+    clearLogoutTimer() {
+        if (this.myTimeoutId) {
+            clearTimeout(this.myTimeoutId);
+            this.myTimeoutId = null; // reset as 'twere
+        }
     }
 
-    private handleAuthentication( // << Now refactored over to auth.effects.ts
+/*    NO LONGER NOW NGRX etc.
+private handleAuthentication( // << Now refactored over to auth.effects.ts
         // I'd first done without *Typing* these incoming params, but better to do with. Cheers.
         email: string,
         userLocalId: string,
@@ -463,30 +495,30 @@ error: "Could not parse auth token."'
         expiresIn: number, // 3600 << don't forget, elsewhere, as you call this method, to '+' passed-in string to numberify!
     ): void { // << no return. instead uses .next(), on our userSubject$ ...
 
-        /*
+        /!*
         We just signed up OR logged in.
         Time to:
          0) determine Date object / milliseconds till expire,
          1) new() up a User, and
          2) ".next()" propagate to any subscribers,
          info about that User, via our userSubject$ !
-         */
+         *!/
 
-        /*
+        /!*
         What the henry hay is going on here?
                     console.log('WR__ just newed-up() User thisHereUser: ', thisHereUser);
-         */
+         *!/
         console.log('WR__ 01 just got to handleAuthentication email ', email); // yeah! necessary@cat.edu
         console.log('WR__ 03 just got to handleAuthentication token ', token); // yeah! big long token
 
             const expirationDateForThis: Date = new Date(
                 new Date().getTime() + (expiresIn * 1000) //  (+expiresIn * 1000) // << no longer need to '+' numberify here
             );
-        /*
+        /!*
         Above RHS inner calculation gets milliseconds.
         Wrap whole RHS w new Date() to get a Date object,
         Assign that to LHS. Bueno.
-         */
+         *!/
 
             const thisHereUser = new User( // << No Longer Using
                 email,
@@ -497,14 +529,14 @@ error: "Could not parse auth token."'
 
             console.log('WR__ just newed-up() User thisHereUser: ', thisHereUser); // hmm. empty baby. not good.
 
-/*  No longer. Now NGRX STORE - our User object for "Authenticated" state
+/!*  No longer. Now NGRX STORE - our User object for "Authenticated" state
         this.userSubject$.next(thisHereUser);
-*/
-/* No longer no longer. Now NGRX/EFFECTS takes care of
+*!/
+/!* No longer no longer. Now NGRX/EFFECTS takes care of
 dispatching this Action to "finalize/complete" the LogIn
 auth.effects.ts
- */
-        this.myStore.dispatch(new fromAuthActions.LogInActionClass(
+ *!/
+        this.myStore.dispatch(new AuthActions.LogInActionClass(
             // thisHereUser // << NO, not User object
             {
                 email: email,
@@ -513,7 +545,7 @@ auth.effects.ts
                 _tokenExpirationDate: expirationDateForThis,
             }
         ));
-        /* LECT. 360 ~03:25
+        /!* LECT. 360 ~03:25
         Max note: Max prefers to move more logic to the Reducer, rather
         than here in (calling) Service.
         So he is simply passing a payload that is the 4 component
@@ -521,11 +553,11 @@ auth.effects.ts
         in the Reducer, instead of here.
         Okay. I'm (lazily) not bothering to re-write to do same.
         Cheers.
-         */
+         *!/
 
 
         localStorage.setItem('myUserData', JSON.stringify(thisHereUser));
-            /*
+            /!*
             LOCALSTORAGE
 --------------
 myUserData
@@ -535,14 +567,15 @@ id: "hMv51L1tHof1paEgJe9ZEjUVhH82"
 _token: "eyJhbG...CNywVQ"
 _tokenExpirationDate: "2020-01-05T14:39:34.039Z"
 --------------
-             */
+             *!/
 
         // Here upon (non-Auto) regular user LogIn (SignUp too), be sure to set that hour-long timer going for "autoLogOut"...
         // It'll be for the default (Firebase) 3,600 seconds (an hour)
         this.autoLogOut(expiresIn * 1000);
-        /* seconds vs milliseconds! 60 * 60 = 3,600 seconds in an hour,
+        /!* seconds vs milliseconds! 60 * 60 = 3,600 seconds in an hour,
                         * 1000 milliseconds = 3,600,000 in an hour
-        */
+        *!/
     } // /handleAuthentication()
+*/
 
 }
