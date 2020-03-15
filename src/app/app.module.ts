@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+
 import { EffectsModule } from '@ngrx/effects';
 import { AuthEffects } from './auth/store/auth.effects';
 
@@ -11,6 +12,8 @@ import { environment } from '../environments/environment';
 import { SharedModule } from './shared/shared.module';
 import { CoreModule } from './core.module';
 import { AppRoutingModule } from './app-routing.module';
+
+import { StoreRouterConnectingModule } from '@ngrx/router-store'; // see also /store/app.reducer.ts
 
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './header/header.component';
@@ -93,9 +96,19 @@ shoppingList: shoppingListReducer
       (I had mistakenly been invoking just "shoppingListReducer" = WRONG-O.)
        */
     EffectsModule.forRoot([AuthEffects]),
+/* I HAD:
     !environment.production ? StoreDevtoolsModule.instrument({
-      maxAge: 10
+      maxAge: 10,
+      logOnly: environment.production, // value is false in dev...
+      // So: in Production, we are saying "logging only pls - not all that other stuff" thanks.
     }) : [],
+*/
+// MAX HAS: (I put (back) in my "maxAge: 10,")
+    StoreDevtoolsModule.instrument({
+      maxAge: 10,
+      logOnly: environment.production,
+    }),
+    StoreRouterConnectingModule.forRoot(),
     SharedModule,
     CoreModule, // << anything here is Eagerly Loaded
   ],

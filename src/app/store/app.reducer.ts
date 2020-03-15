@@ -9,9 +9,37 @@ stuff below
 import {StateAuthPart} from '../auth/store/auth.reducer';
 */
 
+/* ****  NGRX WITH  ROUTER  ************************************
+https://www.udemy.com/course/the-complete-guide-to-angular-2/learn/lecture/14466622#questions/7489756
+    ----------
+Jost TA:
+    "...add the router state as an additional slice (the rest is handled automatically by the router store package):
+----------
+/store/app.reducer.ts
+-----------
+*/
+import * as fromRouter from '@ngrx/router-store';
+
+/* My root interface is below, as "MyOverallRootState". Cheers.
+export interface AppState {
+    ...
+    router: fromRouter.RouterReducerState;
+}
+*/
+
+/* My root "appReducer" is below, as "myRootReducersMap". Cheers.
+export const appReducer: ActionReducerMap<AppState> = {
+    ...
+        router: fromRouter.routerReducer
+};
+    ******  /NGRX w ROUTER  ***********************************
+*/
+
+
 export interface MyOverallRootState {
     shoppingListPartOfStore: fromShoppingListReducer.StateShoppingListPart;
     authPartOfStore: fromAuthReducer.StateAuthPart;
+    routerPartOfStore: fromRouter.RouterReducerState; // from Jost TA
 }
 
 export const myRootReducersMap: ActionReducerMap<MyOverallRootState> = {
@@ -22,6 +50,7 @@ export const myRootReducersMap: ActionReducerMap<MyOverallRootState> = {
      */
     shoppingListPartOfStore: fromShoppingListReducer.shoppingListReducer,
     authPartOfStore: fromAuthReducer.authReducer,
+    routerPartOfStore: fromRouter.routerReducer, // from Jost TA
 };
 
 export const getShoppingListState = createFeatureSelector<fromShoppingListReducer.StateShoppingListPart>('shoppingListPartOfStore');
