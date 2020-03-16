@@ -124,7 +124,7 @@ const handleAuthentication = (
         JSON.stringify(myUserForLocalStorage),
     );
 
-    return new AuthActions.LogInActionClass( // << LOG_IN "SUCCESS"
+    return new AuthActions.AuthenticateSuccessActionClass( // << LOG_IN "SUCCESS"
         { // << Send this "payload," NOT a User object. okay.
             id: localId,
             email: email,
@@ -619,10 +619,10 @@ refreshToken: "AEu4IL0 ... arwsI"
                          */
 
 /* Refactored here from AuthService, which DID use Store and .dispatch()
-                        this.myStore.dispatch(new AuthActions.LogInActionClass(
+                        this.myStore.dispatch(new AuthActions.ogInActionClass(
 */
 // But here in NGRX/Effects, we just want to return a newed up Action/Effect. NGRX does dispatch automatically.
-                        return new AuthActions.LogInActionClass(
+                        return new AuthActions.AuthenticateSuccessActionClass(
                             // thisHereAutoLogInUser // << No. Not a User object
                             {
                                 email: thisHereAutoLogInUser.email,

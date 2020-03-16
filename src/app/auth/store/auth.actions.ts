@@ -43,7 +43,7 @@ export class LogInFailEffectActionClass implements Action {
     // string is just an error message...
 }
 
-export class LogInActionClass implements Action { // << could/should be renamed LoginSUCCESSActionClass
+export class AuthenticateSuccessActionClass implements Action { // << could/should be renamed LoginSUCCESSActionClass
     readonly type = AUTHENTICATE_SUCCESS_ACTION;
     constructor(
         // public myPayload: User // << No. has extra stuff like get token()
@@ -77,16 +77,17 @@ export class SignUpStartEffectActionClass implements Action {
     }
 }
 
-export class ClearErrorActionClass implements Action { // Q. Is this an Effect ? A. I don't think so. Hmm.
-    readonly type = CLEAR_ERROR_ACTION;
-    constructor() { } // no payload ? << right.
-}
-
 export type AuthActionsUnionType =
-      LogInActionClass
+      AuthenticateSuccessActionClass
     | LogOutActionClass
     | LogInStartEffectActionClass
     | LogInFailEffectActionClass
     | SignUpStartEffectActionClass
     | ClearErrorActionClass
     | AutoLoginActionClass;
+
+
+export class ClearErrorActionClass implements Action { // Q. Is this an Effect ? A. I don't think so. Hmm.
+    readonly type = CLEAR_ERROR_ACTION;
+    constructor() { } // no payload ? << right.
+}

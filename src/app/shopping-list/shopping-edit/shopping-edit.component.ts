@@ -244,14 +244,14 @@ Cool.
       /* Now doing NGRX, no longer Service
             this.slService.addIngredient(ingredientWeGotPassedIn);
       */
-      this.myStore.dispatch(new MyShoppingListActionsHereInShoppingEdit.AddIngredientAction(ingredientWeGotPassedIn));
+      this.myStore.dispatch(new MyShoppingListActionsHereInShoppingEdit.AddIngredientActionClass(ingredientWeGotPassedIn));
     } else {
       // EDIT/UPDATE EXISTING
 /* Now doing NGRX, no longer Service
       this.slService.updateIngredient(this.myIngredientSelectedToEditIndex, ingredientWeGotPassedIn);
  */
       this.myStore.dispatch(new MyShoppingListActionsHereInShoppingEdit
-              .UpdateIngredientAction(
+              .UpdateIngredientActionClass(
 /* No. This was initial (WR__) method signature (2 params). Now improved to be a payload object {}
                   this.myIngredientSelectedToEditIndex,
                   ingredientWeGotPassedIn
@@ -277,7 +277,7 @@ Cool.
 /* No Longer; now NGRX
     this.slService.deleteIngredient(indexToDelete);
 */
-    this.myStore.dispatch( new MyShoppingListActionsHereInShoppingEdit.DeleteIngredientAction() ); // >> No >> (indexToDelete));
+    this.myStore.dispatch( new MyShoppingListActionsHereInShoppingEdit.DeleteIngredientActionClass() ); // >> No >> (indexToDelete));
     // No Longer Needed Here - The START_EDIT sets the index number into the State
 
     this.myClearForm();

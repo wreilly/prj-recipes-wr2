@@ -12,7 +12,7 @@ export const DELETE_INGREDIENT_ACTION = '[Shopping List] Delete Ingredient Actio
 export const START_EDIT_ACTION = '[Shopping List] Start Edit Action'; // 'START_EDIT_ACTION'; // LOAD this item into Edit Form
 export const STOP_EDIT_ACTION = '[Shopping List] Stop Edit Action'; // 'STOP_EDIT_ACTION';
 
-export class AddIngredientAction implements Action {
+export class AddIngredientActionClass implements Action {
 
     readonly type = ADD_INGREDIENT_ACTION;
     /*
@@ -30,12 +30,12 @@ export class AddIngredientAction implements Action {
 
 }
 
-export class AddIngredientsAction implements Action {
+export class AddIngredientsActionClass implements Action {
     readonly type = ADD_INGREDIENTS_ACTION;
     constructor(public myPayload: Ingredient[]) { }
 }
 
-export class UpdateIngredientAction implements Action {
+export class UpdateIngredientActionClass implements Action {
     readonly type = UPDATE_INGREDIENT_ACTION;
 /* WR__: << not such good idea, 2 individual params
     constructor(
@@ -58,7 +58,7 @@ export class UpdateIngredientAction implements Action {
     ) { }
 }
 
-export class DeleteIngredientAction implements Action {
+export class DeleteIngredientActionClass implements Action {
     readonly type = DELETE_INGREDIENT_ACTION;
 /* WR__: Yes, keep signature to "myPayload", good. But, doesn't need
           excess structure of object {}, for just one param; see below
@@ -82,11 +82,11 @@ export class DeleteIngredientAction implements Action {
 
     A. (MAX Code) = Right you are, Wm.! NO Payload on MAX Code. Cheers. (No constructor() either.)
      */
-} // /DeleteIngredientAction {}
+} // /DeleteIngredientActionClass {}
 
 export class StartEditActionClass implements Action {
     /* CLASS NEEDS NEW() !!!
-    N.B. I (temporarily?) renamed appending 'Class'
+    N.B. I (temporarily? << no!) renamed appending 'Class'
     Why?
     To help me remember (I continually forget!) to do a
     new() on these Action Classes when invoking them on
@@ -110,10 +110,10 @@ export class StopEditActionClass implements Action {
 }
 
 export type ShoppingListActionsUnionType =
-      AddIngredientAction
-    | AddIngredientsAction
-    | UpdateIngredientAction
-    | DeleteIngredientAction
+      AddIngredientActionClass
+    | AddIngredientsActionClass
+    | UpdateIngredientActionClass
+    | DeleteIngredientActionClass
     | StartEditActionClass
     | StopEditActionClass; // Union of types, using pipe
 /*

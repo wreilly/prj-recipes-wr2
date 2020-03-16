@@ -94,7 +94,7 @@ export function shoppingListReducer (
     action: Action, // No longer used. This was just NgRx Action interface
 */
 /* When there was only One Action:
-    action: MyShoppingListActions.AddIngredientAction, // Now, our specific Action instance. (has ".myPayload")
+    action: MyShoppingListActions.AddIngredientActionClass, // Now, our specific Action instance. (has ".myPayload")
 */
 
 // Now we have additional Actions, so use this custom "union" 'type' to bring all in:

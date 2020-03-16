@@ -62,7 +62,7 @@ and the local Subject (over there) for ingredients
 /* No Longer Used:
     this.slService.addIngredients(ingredients);
 */
-    this.myStore.dispatch(new MyShoppingListActionsHereInRecipeService.AddIngredientsAction(ingredientsPassedIn));
+    this.myStore.dispatch(new MyShoppingListActionsHereInRecipeService.AddIngredientsActionClass(ingredientsPassedIn));
 
   }
 
