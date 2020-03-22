@@ -77,17 +77,17 @@ export class SignUpStartEffectActionClass implements Action {
     }
 }
 
+export class ClearErrorActionClass implements Action { // Q. Is this an Effect ? A. I don't think so. Hmm.
+    readonly type = CLEAR_ERROR_ACTION;
+    constructor() { } // no payload ? << right.
+}
+
+
 export type AuthActionsUnionType =
       AuthenticateSuccessActionClass
     | LogOutActionClass
     | LogInStartEffectActionClass
     | LogInFailEffectActionClass
     | SignUpStartEffectActionClass
-    | ClearErrorActionClass
-    | AutoLoginActionClass;
-
-
-export class ClearErrorActionClass implements Action { // Q. Is this an Effect ? A. I don't think so. Hmm.
-    readonly type = CLEAR_ERROR_ACTION;
-    constructor() { } // no payload ? << right.
-}
+    | AutoLoginActionClass
+    | ClearErrorActionClass;

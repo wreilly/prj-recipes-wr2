@@ -112,10 +112,22 @@ User { token: null }
 
     get token() {
 
+/* TEMPORARY!!! TODO */
         if (!this._tokenExpirationDate || new Date() > this._tokenExpirationDate) {
             // Token expired or non-existent
+            console.log('Token expired or non-existent ain\'t there! hmm');
+            console.log('this._tokenExpirationDate ', this._tokenExpirationDate);
             return null;
         }
+
+// Yeah worked but ...
+/*
+        if (!this._token) {
+            console.log('this._token ain\'t there! hmm');
+            return null;
+        }
+*/
+
 /*
         console.log('primitive-issimo: this.mailing ', this.mailing);
         console.log('primitive but Typed: this.mailingString ', this.mailingString);

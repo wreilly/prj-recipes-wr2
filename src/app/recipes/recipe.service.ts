@@ -41,16 +41,16 @@ export class RecipeService {
   private myStore: Store<fromRoot.MyOverallRootState>
       ) { }
 
-  getRecipes(): Recipe[] {
+  getRecipes(): Recipe[] { // << re: NgRx this will NOT be an "Action". Just a "select()"
     return this.recipes.slice();
   }
 
-  setRecipes(arrayOfRecipes) {
+  setRecipes(arrayOfRecipes) { // re: NgRx, this is an Action
     this.recipes = arrayOfRecipes;
     this.recipesOnServiceChangedSubject.next(this.recipes.slice());
   }
 
-  getRecipe(index: number): Recipe {
+  getRecipe(index: number): Recipe { // << re: NgRx this will NOT be an "Action". Just a "select()"
     return this.recipes[index];
   }
 
@@ -66,17 +66,17 @@ and the local Subject (over there) for ingredients
 
   }
 
-  addRecipe(recipePassedIn: Recipe) {
+  addRecipe(recipePassedIn: Recipe) { // re: NgRx, this is an Action
     this.recipes.push(recipePassedIn);
     this.recipesOnServiceChangedSubject.next(this.recipes.slice());
   }
 
-  updateRecipe(index: number, newRecipe: Recipe) {
+  updateRecipe(index: number, newRecipe: Recipe) { // re: NgRx, this is an Action
     this.recipes[index] = newRecipe;
     this.recipesOnServiceChangedSubject.next(this.recipes.slice());
   }
 
-  deleteRecipe(index: number) {
+  deleteRecipe(index: number) { // re: NgRx, this is an Action ( ? )
     this.recipes.splice(index, 1);
     this.recipesOnServiceChangedSubject.next(this.recipes.slice());
   }

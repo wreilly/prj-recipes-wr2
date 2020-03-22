@@ -9,6 +9,8 @@ stuff below
 import {StateAuthPart} from '../auth/store/auth.reducer';
 */
 
+import * as fromRecipeReducer from '../recipes/store/recipe.reducer';
+
 /* ****  NGRX WITH  ROUTER  ************************************
 https://www.udemy.com/course/the-complete-guide-to-angular-2/learn/lecture/14466622#questions/7489756
     ----------
@@ -39,6 +41,7 @@ export const appReducer: ActionReducerMap<AppState> = {
 export interface MyOverallRootState {
     shoppingListPartOfStore: fromShoppingListReducer.StateShoppingListPart;
     authPartOfStore: fromAuthReducer.StateAuthPart;
+    recipePartOfStore: fromRecipeReducer.StateRecipePart,
     routerPartOfStore: fromRouter.RouterReducerState; // from Jost TA
 }
 
@@ -50,6 +53,7 @@ export const myRootReducersMap: ActionReducerMap<MyOverallRootState> = {
      */
     shoppingListPartOfStore: fromShoppingListReducer.shoppingListReducer,
     authPartOfStore: fromAuthReducer.authReducer,
+    recipePartOfStore: fromRecipeReducer.recipeReducer,
     routerPartOfStore: fromRouter.routerReducer, // from Jost TA
 };
 
@@ -65,6 +69,8 @@ export const getIsAuthenticatedInStoreOLD = createSelector(
     }
 );
 */
+
+export const getRecipeState = createFeatureSelector<fromRecipeReducer.StateRecipePart>('recipePartOfStore');
 
 export const getIsAuthenticatedInStore = createSelector(
     getAuthState,

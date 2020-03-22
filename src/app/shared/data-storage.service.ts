@@ -8,6 +8,11 @@ import { Recipe } from '../recipes/recipe.model';
 import { User } from '../auth/user.model'; // << Yah. Just to Type a parameter; see below. << Nah.
 import { AuthService } from '../auth/auth.service';
 
+// NgRx (cf. AuthService) re: these imports ...
+import { Store } from '@ngrx/store';
+import * as fromRoot from '../store/app.reducer';
+import * as RecipesActions from '../recipes/store/recipe.actions';
+
 /* @Injectable() */
 @Injectable({
     providedIn: 'root'
@@ -29,6 +34,7 @@ No.
         // myHttp: HttpClient, // << see note below NOT GETTING TO WORK any "long cut". Hmmph. o well.
         private myRecipeService: RecipeService,
         private myAuthService: AuthService,
+        private myStore: Store<fromRoot.MyOverallRootState>,
         ) { }
         /*
         NOTE on 'private'
@@ -126,6 +132,15 @@ No.
                 map(
                     (recipesFetched: Recipe[]) => {
                         return recipesFetched.map(
+                            /*
+                            Here, we ensure each Recipe returned has
+                            an 'ingredients' property, which we set to empty array
+                            if need be.
+                            That is, a Recipe (apparently) can be stored on Firebase
+                            with NO 'ingredients' property (hmm), but,
+                            upon fetching, we do want them ALL to have that property,
+                            even if empty array []. Cheers.
+                             */
                             eachRecipe => {
                                 return {
                                     ...eachRecipe,
@@ -136,7 +151,13 @@ No.
                 tap(
                     (newArrayRecipesWithAtLeastEmptyIngredientsWeGot: Recipe[]) => {
 
+                        /*
+                        NgRx now
+                         */
+                        this.myStore.dispatch(new RecipesActions.SetRecipesActionClass(newArrayRecipesWithAtLeastEmptyIngredientsWeGot));
+/* No Longer using RecipeService:
                         this.myRecipeService.setRecipes(newArrayRecipesWithAtLeastEmptyIngredientsWeGot);
+*/
 
                         // MBU: Use of tap() has implicit 'return'
                     }
@@ -201,7 +222,7 @@ Woot. iguess
                         };
                     });
             }
-        }
+        };
         // return this.myAuthService.userSubject$ // <<<<<<<<<<<<< KEY LINE COMMENTED OUT, EFFECTIVELY
         return myAPI.getData()  // <<<<<<<<<<< TOTAL DUMMY OBSERVABLE JUST SWAPPED IN SO IT'LL COMPILE FER CHRISSAKES
             .pipe(
@@ -502,8 +523,16 @@ Trying "my way" to add Token to the Request.
         // TODONOPE (Q. Store 1 Recipe ?  A. Guess not.)
     }
 
+    storeRecipes(): void { // : any { // return type is ___ ???
+/* Hmm, no longer "returning" a Subscription ... (now NgRx)
+(ACTUALLY: N.B. MAX Code does ***NOT*** DO ( ??? ) NgRx for storeRecipes() ??? )
+Interesting: Only in FINAL (ngrx-12-finished) code does Max get this in:
+- /recipes/store/recipe.effect.ts @Effect() storeRecipes ... calls store.select('recipes'),
+to obtain the Recipes[] from the NgRx Store, to send ("store" as verb) to
+Firebase. Cheers.
 
     storeRecipes(): Subscription {
+*/
         // << A la MAX Code.
         // We now rely on HTTPInterceptors re: AUTH/TOKEN etc.
 
@@ -518,53 +547,86 @@ Trying "my way" to add Token to the Request.
         That is what is needed by the RecipesResolverService for example.
          */
 
+/* No Longer Using RecipeService ...
         const recipesToStore: Recipe[] = this.myRecipeService.getRecipes();
+*/
 
-        if (recipesToStore.length === 0) {
-            // Oops we prob don't want to send 0 Recipes back to Firebase. No.
-            // Q. Why (not)? A. Because that would OVERWRITE all Recipes on Firebase. (boo-hoo)
-            // Prolly not what you want.
-            /*
-            One further comment re: this if() test:
-            Scenario:
-            - User upon login has 0 Recipes, in the app. (There are of course Recipes over on Firebase)
-            - User needs to "Fetch Data" to get Recipes into the app (from Firebase)
-            - If instead user ran our "Send Data" first, with 0 Recipes in the app,
-               before fetching, THAT is scenario we are guarding against, here:
-            AVOID: Overwriting all Recipes on Firebase by sending 0 Recipes. Cheers.
+        /*
+        Now NgRx Store for getting the Recipes[]
+         */
+        this.myStore.select(fromRoot.getRecipeState)
+            .pipe(
+                tap(
+                    (recipesWeGotFromStore) => {
+                        console.log('recipesWeGotFromStore ', recipesWeGotFromStore);
+                        const recipesToStore: Recipe[] = recipesWeGotFromStore.recipes;
 
-            In other words, Firebase is Too Stupid, a.k.a.
-            you can Shoot Yourself in the Foot if not careful.
-            Cheers.
-             */
-            alert('We are not going to let you ZERO OUT your Firebase Database. Solly!');
-            return;
-        }
+                        /*
+NgRx
+We refactor (copy, paste) ALL the logic herein
+from where it was before, for RecipeService.getRecipes()
+ */
 
-        this.myHttp.put( // << MAX Code, no 'return'. Hmm.
-        // return this.myHttp.put( // WR__. worked. hmm.
-                        'https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json',
-                        recipesToStore,
-                    ) // /.put()
-                        .pipe(
-                            tap(
-                                (whatWeGotSending) => {
-                                    console.log('whatWeGotSending ', whatWeGotSending);
-                                } // yep: {name: "-LwhEb8qPJct0j7yBgWl"}
-                            )
-                            // N.B. I've removed the catchError() that I had, from here; now on the Interceptor.
-                            /* << Update note: that catchError() is now "doing nothing"
-                               just passes through the entire HttpErrorResponse it gets. Cheers.
-                             Also note: MAX Code doesn't have any error handling here on DataStorageService.storeRecipes().
-                            (Nor on fetchRecipes(), fwiw.)
-                            MAX Code also does NOT have error handling on AuthInterceptorService, fwiw.
-                            MAX Code DOES have error handling on AuthService.signUp and .logIn.
+                        if (recipesToStore.length === 0) {
+                            // Oops we prob don't want to send 0 Recipes back to Firebase. No.
+                            // Q. Why (not)? A. Because that would OVERWRITE all Recipes on Firebase. (boo-hoo)
+                            // Prolly not what you want.
+                            /*
+                            One further comment re: this if() test:
+                            Scenario:
+                            - User upon login has 0 Recipes, in the app. (There are of course Recipes over on Firebase)
+                            - User needs to "Fetch Data" to get Recipes into the app (from Firebase)
+                            - If instead user ran our "Send Data" first, with 0 Recipes in the app,
+                               before fetching, THAT is scenario we are guarding against, here:
+                            AVOID: Overwriting all Recipes on Firebase by sending 0 Recipes. Cheers.
+
+                            In other words, Firebase is Too Stupid, a.k.a.
+                            you can Shoot Yourself in the Foot if not careful.
+                            Cheers.
                              */
-                        ) // /.pipe()
-            .subscribe(
-                (whatWeGotSending) => { console.log('whatWeGotSending ', whatWeGotSending); } // yep: {name: "-LwhEb8qPJct0j7yBgWl"}
-            );
+                            alert('We are not going to let you ZERO OUT your Firebase Database. Solly!');
+                            return;
+                        }
 
+                        this.myHttp.put( // << MAX Code, no 'return'. Hmm.
+                            // return this.myHttp.put( // WR__. worked. hmm.
+                            'https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json',
+                            recipesToStore,
+                        ) // /.put()
+                            .pipe(
+                                tap(
+                                    (whatWeGotSending) => {
+                                        console.log('whatWeGotSending ', whatWeGotSending);
+                                        // yep: {name: "-LwhEb8qPJct0j7yBgWl"}
+
+                                        // NgRx - need a return now ( ? )
+                                        return whatWeGotSending;
+
+                                        /* Hmm. TODO look at MAX code for this. Cheers.
+                                        ERROR in src/app/shared/data-storage.service.ts(527,21):
+                                        error TS2355: A function whose declared type is neither 'void' nor 'any' must return a value.
+                                         */
+
+                                    }
+                                )
+                                // N.B. I've removed the catchError() that I had, from here; now on the Interceptor.
+                                /* << Update note: that catchError() is now "doing nothing"
+                                   just passes through the entire HttpErrorResponse it gets. Cheers.
+                                 Also note: MAX Code doesn't have any error handling here on DataStorageService.storeRecipes().
+                                (Nor on fetchRecipes(), fwiw.)
+                                MAX Code also does NOT have error handling on AuthInterceptorService, fwiw.
+                                MAX Code DOES have error handling on AuthService.signUp and .logIn.
+                                 */
+                            ); // /.pipe() INNER - HTTP()
+/* No Longer .subscribe() here, I think ( ? ) NgRx
+                            .subscribe(
+                                (whatWeGotSending) => { console.log('whatWeGotSending ', whatWeGotSending); }
+                                // yep: {name: "-LwhEb8qPJct0j7yBgWl"}
+                            );
+*/
+                    }
+                ),
+            ); // /.pipe() OUTER - SELECT()
     } // /storeRecipes()
 
 
@@ -616,7 +678,7 @@ Trying "my way" to add Token to the Request.
                         };
                     });
             }
-        }
+        };
         // return this.myAuthService.userSubject$ // <<<<<<<<<<<<< KEY LINE COMMENTED OUT, EFFECTIVELY
         return myAPI.getData() // YEAH <<<<<<<<<<< TOTAL DUMMY OBSERVABLE JUST SWAPPED IN SO IT'LL COMPILE FER CHRISSAKES
         // return myAPITwo.myObservableOfThing // NO <<<<<<<<<<< TOTAL DUMMY OBSERVABLE TRIED TO SWAP IN O WELL

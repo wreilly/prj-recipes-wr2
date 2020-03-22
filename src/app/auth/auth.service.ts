@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import {catchError, tap} from 'rxjs/operators';
 import {Observable, throwError} from 'rxjs'; // No longer Subject; nor BehaviorSubject; not using ObservableInput
 
-import { Store } from '@ngrx/store';
+import { Store } from '@ngrx/store'; // (cf. DataStorageService)
 import * as fromRoot from '../store/app.reducer';
 import * as AuthActions from '../auth/store/auth.actions';
 
