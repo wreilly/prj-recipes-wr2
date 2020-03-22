@@ -154,7 +154,8 @@ No.
                         /*
                         NgRx now
                          */
-                        this.myStore.dispatch(new RecipesActions.SetRecipesActionClass(newArrayRecipesWithAtLeastEmptyIngredientsWeGot));
+                        this.myStore
+                            .dispatch(new RecipesActions.SetRecipesEffectActionClass(newArrayRecipesWithAtLeastEmptyIngredientsWeGot));
 /* No Longer using RecipeService:
                         this.myRecipeService.setRecipes(newArrayRecipesWithAtLeastEmptyIngredientsWeGot);
 */

@@ -8,6 +8,7 @@ import { HttpClient } from '@angular/common/http';
 import { Store } from '@ngrx/store';
 import * as fromRoot from '../store/app.reducer';
 import * as AuthActions from '../auth/store/auth.actions';
+import * as RecipesActions from '../recipes/store/recipe.actions';
 
 import { DataStorageService } from '../shared/data-storage.service';
 import { AuthService } from '../auth/auth.service';
@@ -193,7 +194,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   fetchData() {
+
+      this.myStore.dispatch(new RecipesActions.FetchRecipesEffectActionClass());
+
+/* No Longer Used! Now NgRx (above)
     this.myDataStorageService.fetchRecipes().subscribe(); // round and round
+*/
+
     /* Now this .subscribe() is needed here again, on the calling Component.
     Hmm. See also how the RecipesResolverService invokes .fetchRecipes().
     That one does NOT use .subscribe(), but, it DOES have a 'return' on it. Hmm.

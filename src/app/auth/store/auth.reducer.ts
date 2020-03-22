@@ -116,6 +116,18 @@ export function authReducer(
                 myAuthError: null, // << reset
                 myIsLoading: false,
             };
+        /*
+LECT. 381
+>> redirectUponLogin: boolean <<
+Just to note it:
+Apparently (MAX Code) we do *NOT* add this new property, above,
+that is now on the Action "AUTHENTICATE_SUCCESS_ACTION",
+to anything here on the AuthReducer "case" for that action.
+
+Note that we *DO* use it in the AuthEffects file.
+*/
+
+
 /* Um, I Don't Think So:
 
             return {

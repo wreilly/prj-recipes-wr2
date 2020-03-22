@@ -20,7 +20,7 @@ export function recipeReducer (
     switch (ngrxAction.type) {
         case fromRecipeActions.ADD_RECIPE_ACTION:
             break;
-        case fromRecipeActions.SET_RECIPES_ACTION:
+        case fromRecipeActions.SET_RECIPES_EFFECT_ACTION:
             // MAX Code - uses spread operator, inside literal [ array ] brackets
             return {
                 ...ngrxState,

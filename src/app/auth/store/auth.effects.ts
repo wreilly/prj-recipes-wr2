@@ -136,10 +136,13 @@ YEP! If I click "Fetch Data" fast enough, I do get it. Oi!
             email: email,
             _token: idToken,
             _tokenExpirationDate: expiresInCalculated,
+            redirectUponLogin: true, // sheesh. Max introduces in LECT 381 ~01:48
+            // - AutoLogIn = false = do NOT redirect
+            // - HERE: Manual LogIn/SignUp (handleAuthentication()) = true = DO redirect (to '/')
         }
     );
 
-};
+}; // /handleAuthentication()
 
 const handleError = (errorResponseWeGot) => {
     let errorMessageToReturnBack = 'Something who knows what went wrong';
@@ -383,20 +386,41 @@ __proto__: HttpResponseBase
     myAuthSuccessRedirectEffect = this.myEffectActions$.pipe(
         ofType(
             AuthActions.AUTHENTICATE_SUCCESS_ACTION,
-            AuthActions.LOG_OUT_ACTION,
+            // AuthActions.LOG_OUT_ACTION, // LECT 381 ~00:12 Guess we took this out awhile ago...
         ), // << "Log In Success" action, could be named...
         tap(
-            (authDataWeGot: AuthResponseData) => {
-                console.log('authDataWeGot 888', authDataWeGot);
+            (authDataWeGot: AuthActions.AuthenticateSuccessActionClass) => {
+/* Huh. Guess I had the data TYPE *wrong* here (wtf?)
+            (authDataWeGot: AuthResponseData) => { // << ??
+*/
                 /*
-                myPayload:
+                LECT. 381 New boolean "if()" redirectUponLogin: boolean,
+                N.B. TWO things call this "Auth Success Action"
+                1. handleAuthentication = manual login/signup << We DO redirect
+                2. AutoLogin << We do NOT want to redirect. cheers.
+                 */
+                console.log('authDataWeGot 888', authDataWeGot);
+                /* NOW I SEE:
+myPayload:
+email: "wednesday@week.com"
+id: "hLzaGHeZUzPG8Stsp1YyGYFGU4z1"
+redirectUponLogin: false   <<<<<<<<<<<<<<<< YEP
+_token: "eyJhb ... oOkXN-e2gog"
+_tokenExpirationDate: Sun Mar 22 2020 19:35:40 GMT-0400 (Eastern Daylight Time) {}
+                 */
+
+                /* EARLIER I SAW:
+myPayload:
 email: "wednesday@week.com"
 id: "hLzaGHeZUzPG8Stsp1YyGYFGU4z1"
 _token: "eyJhbGciOiJSUzI1Ni...aTjw"
 _tokenExpirationDate: Mon Mar 09 2020 07:18:52 GMT-0400 (Eastern Daylight Time) {}
                  */
                 // this.myRouter.navigate(['/recipes']); // Max to ['/'].
-                this.myRouter.navigate(['/']); // Now that using this "redirect" action for multiple
+                if (authDataWeGot.myPayload.redirectUponLogin) {
+                    this.myRouter.navigate(['/']);
+                }
+
                 // "You could pass in as a payload the redirect URL you wanted..."
             }
         ) // /tap()
@@ -634,7 +658,10 @@ refreshToken: "AEu4IL0 ... arwsI"
                                 email: thisHereAutoLogInUser.email,
                                 id: thisHereAutoLogInUser.id,
                                 _token: thisHereAutoLogInUser.token,
-                                _tokenExpirationDate: new Date(loggedInUserObjectLiteral._tokenExpirationDate)
+                                _tokenExpirationDate: new Date(loggedInUserObjectLiteral._tokenExpirationDate),
+                                redirectUponLogin: false, // Max introduces in LECT 381 ~01:48
+                                // - HERE: AutoLogIn = false = do NOT redirect
+                                // - Manual LogIn/SignUp (handleAuthentication()) = true = DO redirect (to '/')
                             }
                         );
                     } else {

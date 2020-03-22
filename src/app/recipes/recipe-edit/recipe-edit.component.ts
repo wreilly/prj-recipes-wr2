@@ -3,6 +3,12 @@ import { ActivatedRoute, Router, Params } from '@angular/router';
 import {FormGroup, FormControl, Validators, FormArray, Form, AbstractControl} from '@angular/forms';
 import { RecipeService } from '../recipe.service';
 import {Recipe} from '../recipe.model';
+import { tap, map } from 'rxjs/operators';
+
+import { Store } from '@ngrx/store';
+import * as fromRoot from '../../store/app.reducer';
+import * as RecipeActions from '../store/recipe.actions';
+import {compareNumbers} from '@angular/compiler-cli/src/diagnostics/typescript_version';
 
 @Component({
   selector: 'app-recipe-edit',
@@ -18,6 +24,7 @@ export class RecipeEditComponent implements OnInit {
       private route: ActivatedRoute,
       private router: Router,
       private myRecipeService: RecipeService,
+      private myStore: Store<fromRoot.MyOverallRootState>,
       ) { }
 
   ngOnInit() {
@@ -119,12 +126,28 @@ export class RecipeEditComponent implements OnInit {
 
       if (this.editMode) {
           // UPDATE EXISTING
+
+/* No Longer Using (now NgRx)
           this.myRecipeService.updateRecipe(this.id, recipeToSendToService);
+*/
+
+          this.myStore.dispatch(new RecipeActions.UpdateRecipeEffectActionClass({
+              idToUpdate: this.id,
+              recipeToUpdate: recipeToSendToService
+              })
+          );
+
           this.editMode = false;
           this.myOnCancel(); // we are done!
       } else {
           // ADD NEW
+
+/* No Longer Using (now NgRx)
           this.myRecipeService.addRecipe(recipeToSendToService);
+*/
+
+          this.myStore.dispatch(new RecipeActions.AddRecipeActionClass({ recipeToAdd: recipeToSendToService }));
+
           this.myOnCancel(); // we are done!
       }
 
@@ -141,35 +164,73 @@ export class RecipeEditComponent implements OnInit {
 
       if (this.editMode) {
 
+/* No Longer Using (now NgRx)
           const theRecipeToUpdate = this.myRecipeService.getRecipe(this.id);
-          recipeName = theRecipeToUpdate.name;
-          recipeDescription = theRecipeToUpdate.description;
-          recipeImagePath = theRecipeToUpdate.imagePath;
-          if (theRecipeToUpdate.ingredients) { // Yes
-          // if (theRecipeToUpdate['ingredients']) { // Yes. Instructor Code.
+*/
 
-              /* Old school.
-              for (let i = 0; i < theRecipeToUpdate.ingredients.length; i++) {
-              */
-              // Instructor Code. ('const' here vs. 'let' fwiw)
-              for (const thisIngredient of theRecipeToUpdate.ingredients) {
-                  recipeIngredients.push(
-                      new FormGroup({
-                          name: new FormControl(
-                              thisIngredient.name,
-                              [Validators.required],
-                          ),
-                          amount: new FormControl(
-                              thisIngredient.amount,
-                              [Validators.required],
-                          )
-                      })
-                  );
-              }
-          } else {
-              // If NO ingredients on the recipe
-              // we just use our originally initialized empty array of Controls = OK
-          }
+          this.myStore.select(fromRoot.getRecipeState)
+              .pipe(
+                  map(
+                      (stateRecipePartWeGot) => {
+                          // const theRecipeToUpdate = [];
+                          // With NgRx we now do ".getRecipe(id)" right here, as 'twere:
+                          return stateRecipePartWeGot.recipes.find(
+                              ( eachRecipe: Recipe, eachRecipeIndex: number ) => {
+                                  return eachRecipeIndex === this.id;
+                                  /*
+                                  Q. Why does above work, that the route param/:id can be
+                                  used to find the desired Recipe in the array of them?
+                                  A. Because our array of Recipes really has no "unique,
+                                  unchanging ID" on each Recipe.
+                                  Instead, we rely simply on the array index, for both
+                                  routing e.g. /recipes/1 or /recipes/1/edit
+                                  and for then retrieving that Recipe from the array:
+                                  arrayOfRecipes[1]
+                                  Q.2. As opposed to what.
+                                  A.2. As compared to: a Recipe model that actually had
+                                  an id: number property on it. That situation would be
+                                  different, and would not use the .find(item, index)
+                                  parameter of index, to locate which recipe in our array
+                                  of them.
+                                  Cheers.
+                                   */
+                              }
+                          ); // /.find()
+                      }
+                  ) // /map()
+              ) // /.pipe()
+              .subscribe(
+                  (theRecipeToUpdate: Recipe) => {
+                      recipeName = theRecipeToUpdate.name;
+                      recipeDescription = theRecipeToUpdate.description;
+                      recipeImagePath = theRecipeToUpdate.imagePath;
+                      if (theRecipeToUpdate.ingredients) { // Yes
+                          // if (theRecipeToUpdate['ingredients']) { // Yes. Instructor Code.
+
+                          /* Old school.
+                          for (let i = 0; i < theRecipeToUpdate.ingredients.length; i++) {
+                          */
+                          // Instructor Code. ('const' here vs. 'let' fwiw)
+                          for (const thisIngredient of theRecipeToUpdate.ingredients) {
+                              recipeIngredients.push(
+                                  new FormGroup({
+                                      name: new FormControl(
+                                          thisIngredient.name,
+                                          [Validators.required],
+                                      ),
+                                      amount: new FormControl(
+                                          thisIngredient.amount,
+                                          [Validators.required],
+                                      )
+                                  })
+                              );
+                          }
+                      } else {
+                          // If NO ingredients on the recipe
+                          // we just use our originally initialized empty array of Controls = OK
+                      }
+                  }
+              ); // /.subscribe()
       } // /if (editMode)
 
     this.myRecipeForm = new FormGroup({

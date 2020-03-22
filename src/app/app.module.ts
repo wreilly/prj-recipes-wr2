@@ -6,6 +6,7 @@ import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 
 import { EffectsModule } from '@ngrx/effects';
 import { AuthEffects } from './auth/store/auth.effects';
+import { RecipeEffects } from './recipes/store/recipe.effects';
 
 import { environment } from '../environments/environment';
 
@@ -95,7 +96,10 @@ shoppingList: shoppingListReducer
       the "myShoppingListViaReducer" to get at that part of the Store. Cheers.
       (I had mistakenly been invoking just "shoppingListReducer" = WRONG-O.)
        */
-    EffectsModule.forRoot([AuthEffects]),
+    EffectsModule.forRoot([
+      AuthEffects,
+      RecipeEffects,
+    ]),
 /* I HAD:
     !environment.production ? StoreDevtoolsModule.instrument({
       maxAge: 10,

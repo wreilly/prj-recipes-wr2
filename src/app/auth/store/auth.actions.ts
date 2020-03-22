@@ -52,6 +52,10 @@ export class AuthenticateSuccessActionClass implements Action { // << could/shou
         id: string, // sheesh. Max has id: on User model, but userId: on his Login Action. Sheesh.
         _token: string, // sheesh. Max uses token
         _tokenExpirationDate: Date, // sheesh. Max uses expirationDate: Date, OR, expiresIn: number
+        redirectUponLogin: boolean, // sheesh. Max introduces in LECT 381 ~01:48
+        // - AutoLogIn = do NOT redirect
+        // - Manual LogIn/SignUp = DO redirect (to '/')
+        // See AuthEffects for use. (N.B. It is *not* used, at all, in AuthReducer. cheers.)
     }
     ) {  }
 }
