@@ -103,7 +103,13 @@ const handleAuthentication = (
     idToken: string,
     expiresIn: number,
 ) => {
-    const expiresInCalculated: Date = new Date( new Date().getTime() +  expiresIn );
+/* Hmm, I'd omitted the "* 1000" !!! ???  BUG FIX !!! (Finally) oi!
+Note:   "expiresIn": "3600" << from auth-interceptor.service.ts
+3600 milliseconds ~= 3.6 seconds, till it would expire (almost immediately)
+YEP! If I click "Fetch Data" fast enough, I do get it. Oi!
+*/
+    // const expiresInCalculated: Date = new Date( new Date().getTime() +  expiresIn );
+   const expiresInCalculated: Date = new Date( new Date().getTime() +  (expiresIn * 1000) ); // Oi! you forgot the "* 1000"
 
     // Don't forget LocalStorage !
     // Need to new up a User for that
@@ -706,4 +712,4 @@ Hmm, guess is setTimeout() on autoLogout. Hmm okay...
     Can be synchronous, or can await asynchronous completion before triggering.
      */
 
-}
+} // export class AuthEffects
