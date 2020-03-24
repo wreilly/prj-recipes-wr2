@@ -19,19 +19,20 @@ export function recipeReducer (
 
     switch (ngrxAction.type) {
         case fromRecipeActions.ADD_RECIPE_ACTION:
-            break;
+            break; // TODO
         case fromRecipeActions.SET_RECIPES_EFFECT_ACTION:
+            console.log('??? REDUCER SET_RECIPES 22 - ngrxAction.myPayload ', ngrxAction.myPayload);  // << yes. array.
             // MAX Code - uses spread operator, inside literal [ array ] brackets
             return {
                 ...ngrxState,
                 recipes: [ ...ngrxAction.myPayload ],
             };
-/* WR__ Code - I *think* should work ( ? ) t.b.d.
-No [ ], no '...', just puts the Recipe[] directly onto the recipes: property. I think works.
+/* WR__ Code below - I *think* should work ( ? ) t.b.d.
+No use of: [ ], no use of: '...', -- Just put the Recipe[] directly onto the recipes: property. I think works.
 btw, SEE ALSO lengthy discussion/comment in ShoppingListReducer.START_EDIT_ACTION
             return {
                 ...ngrxState,
-                recipes: ngrxAction.myPayload,
+                recipes: ngrxAction.myPayload, // << I think works
             };
 */
 

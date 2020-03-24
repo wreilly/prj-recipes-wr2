@@ -195,6 +195,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   fetchData() {
 
+      // Same line as the RecipesResolverService uses, upon routing to /recipes/1 etc.
       this.myStore.dispatch(new RecipesActions.FetchRecipesEffectActionClass());
 
 /* No Longer Used! Now NgRx (above)

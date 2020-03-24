@@ -5,6 +5,7 @@ export const ADD_RECIPE_ACTION = '[Recipes] Add Recipe';
 export const UPDATE_RECIPE_EFFECT_ACTION = '[Recipes] Update Recipe'; // << ? Effect ?
 export const FETCH_RECIPES_EFFECT_ACTION = '[Recipes] Fetch Recipes';
 export const SET_RECIPES_EFFECT_ACTION = '[Recipes] Set Recipes';
+// TODO Rename (I think) to remove "_EFFECT_" from SET_RECIPES etc. t.b.d.
 
 export class AddRecipeActionClass implements Action {
     readonly type = ADD_RECIPE_ACTION;

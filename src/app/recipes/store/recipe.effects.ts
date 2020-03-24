@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Effect, Actions, ofType } from '@ngrx/effects';
 import {map, switchMap, tap} from 'rxjs/operators';
-import { of } from 'rxjs';
+import {Observable, of} from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { Recipe } from '../recipe.model';
 import * as RecipesActions from './recipe.actions';
+// import {SetRecipesEffectActionClass} from './recipe.actions';
+
 
 /*
        TABLE of CONTENTS
@@ -32,27 +34,46 @@ export class RecipeEffects {
 
 
     @Effect() // 1.
-    myFetchRecipesEffect = this.myRecipeEffectActions$.pipe(
+    myFetchRecipesEffect = this.myRecipesEffectsActions$ // << no particular need for "typing" here. MAX doesn't.
+    // myFetchRecipesEffect: Observable<any> = this.myRecipesEffectsActions$ // << didn't break stuff. but hey.
+    // myFetchRecipesEffect: Observable<RecipesActions.SetRecipesEffectActionClass> = this.myRecipesEffectsActions$
+        .pipe(
+        /* This "type" is below: Observable<RecipesActions.SetRecipesEffectActionClass>
+
+        That is, even though the "ofType()" here is for acting upon FETCH Recipes effect/actions,
+        what is *returned* in the subsequent action "newed up()" below is
+        the SET Recipes action type. So the "type" for the returned Observable is <SetRecipes>. Cheers.
+
+        type = SET_RECIPES_EFFECT_ACTION;
+        public myPayload: Recipe[]
+         */
         ofType(RecipesActions.FETCH_RECIPES_EFFECT_ACTION),
-/*
+
+        /* Yeah, you *can* do this (useless, log-only) "map()"
+* before the switchMap() below.
+* But I'll Comment it Out again ... cheers. */
+/* Log-only:
         map(
             (whatWeGot) => {
                 //
                 console.log('??? 11 whatWeGot if/anything fetch recipes effect action ', whatWeGot);
+                /!*  Yep:   {type: "[Recipes] Fetch Recipes"}   *!/
                 return whatWeGot;
             }
         ),
 */
+
         switchMap(
             /*
             https://www.learnrxjs.io/learn-rxjs/operators/transformation/switchmap
             "switchMap maintains only one inner subscription at a time"
             "avoid switchMap in scenarios where every request needs to complete; think writes to a database."
              */
-            (whatWeGot) => { // MAX speaks of "fetchAction" data; but we are not getting any payload ...
-                // but this console.log is NEVER SEEN. Hmm. Y?
+            (whatWeGot) => {
+                // MAX speaks of "fetchAction" data; but we are not getting any payload ... True, we just get the "type" info back. OK.
                 console.log('??? 22 whatWeGot if/anything fetch recipes effect action ', whatWeGot);
-                // return of([1]); // some damned Observable to return...
+                /* Yep:   {type: "[Recipes] Fetch Recipes"}   */
+
                 return this.myHttp.get<Recipe[]>('https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json');
                 /*
                 N.B. I (mistakenly) thought you'd use .pipe() off of the above line
@@ -91,13 +112,20 @@ core.js:4002 ERROR TypeError: Actions must have a type property
 ==============
              */
             (recipesArrayWeGot: Recipe[]) => {
-                return new RecipesActions.SetRecipesEffectActionClass(recipesArrayWeGot);
+                return new RecipesActions.SetRecipesEffectActionClass(recipesArrayWeGot); // YES! WORKS! (w. *return*)
+                // new RecipesActions.SetRecipesEffectActionClass(recipesArrayWeGot); // << No. Cannot omit that *return*. No way.
+                /* Unused expression. Expected an assignment or function call...
+                *
+                * core.js:4002 ERROR TypeError: Actions must be objects
+                * ERROR Error: Effect "RecipeEffects.myFetchRecipesEffect"
+                * dispatched an invalid action: undefined
+                * */
             }
         )
     ); // /.pipe()
 
     constructor(
-        private myRecipeEffectActions$: Actions, // Actions Observable hence '$'
+        private myRecipesEffectsActions$: Actions, // Actions Observable hence '$'
         private myHttp: HttpClient,
     ) { }
 
