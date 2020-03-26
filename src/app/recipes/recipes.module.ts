@@ -5,7 +5,8 @@ These next 3 Module imports are needed here in the
 RecipesModule.
 Why?
 Because the Components herein use these pieces (routing, *ngIf, forms etc).
-Note that the Service (RecipeService) remains in the root AppModule.
+Note that the Service (RecipeService) remains in the root AppModule. << Not Any More
+^^ RecipeService we now find in CoreModule. Cheers.
  */
 import { RouterModule } from '@angular/router'; // RecipesComponent has <router-outlet>
 /*

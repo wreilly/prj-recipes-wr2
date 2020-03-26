@@ -30,7 +30,7 @@ const myRecipesRoutes: Routes = [
         path: 'recipes',  // << YES 'recipes'!!! for now... (# 02)
 */
 /* OK! We've arrived at loadChildren - Lect. 330 lazy loading */
-        path: '',  // << NOT 'recipes'!!! << when we get to loadChildren() in AppRouting, in later lectures... (# 06)
+        path: '',  // << '', NOT 'recipes'!!! << when we get to loadChildren() in AppRouting, in later lectures... (# 06)
 
         component: RecipesComponent,
         canActivate: [AuthGuard],

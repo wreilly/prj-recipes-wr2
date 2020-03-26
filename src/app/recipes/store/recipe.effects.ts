@@ -5,7 +5,6 @@ import {Observable, of} from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { Recipe } from '../recipe.model';
 import * as RecipesActions from './recipe.actions';
-// import {SetRecipesEffectActionClass} from './recipe.actions';
 
 
 /*
@@ -20,7 +19,7 @@ import * as RecipesActions from './recipe.actions';
        That is, HTTP calls to Firebase, for:
        - fetchRecipes
        - storeRecipes
-cheers.
+       Cheers.
 
        1.
        @Effect()

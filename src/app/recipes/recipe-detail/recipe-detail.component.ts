@@ -1,14 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import {map, switchMap} from 'rxjs/operators';
+import {Observable} from 'rxjs';
 
 import { Recipe } from '../recipe.model';
 import { RecipeService } from '../recipe.service';
 
 import { Store } from '@ngrx/store';
 import * as fromRoot from '../../store/app.reducer';
-import {Observable} from 'rxjs';
-import {StateRecipePart} from '../store/recipe.reducer';
+import {StateRecipePart} from '../store/recipe.reducer'; // huh. guess we need this, in addition to fromRoot
+// see typing of Observable<StateRecipePart> below
+// doesn't work as Observable<fromRoot.getRecipePart>  Don't know how come. hmm.
+
+import * as RecipeActions from '../store/recipe.actions';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -37,6 +41,7 @@ export class RecipeDetailComponent implements OnInit {
       );
 */
 /* 02 - One Way To Do It - All under that initial .subscribe() to Route Params */
+/*
       this.route.params
           .subscribe(
               (params: Params) => {
@@ -64,12 +69,17 @@ export class RecipeDetailComponent implements OnInit {
                       );
               }
           );
+*/
 
       /* 03 - Better Way To Do It - All under one .pipe() */
       this.route.params
           .pipe(
               map( // Route Params Observable...
                   (paramsWeGot): number => {
+                      console.log('paramsWeGot ', paramsWeGot);
+                      /*
+                      {id: "1"}  << et voila!
+                       */
                       return +paramsWeGot['id']; // << put a '+' on to number-ize... :o)
                   }
               ),
@@ -77,6 +87,14 @@ export class RecipeDetailComponent implements OnInit {
                   // "switch from the Route Params Observable, to the Store Observable..." LECT. 379 ~05:06
                   (paramsIdWeGot): Observable<StateRecipePart> => {
                       this.id = paramsIdWeGot;
+                      /* Lect. 382 ~13:41  (cf. RecipeEditComponent wrInitForm())
+                      Angular does Subscription for us -
+                      We do NOT need to do a rxjs Subscription ourselves here.
+                      "[here we are in] part of our Route Params Subscription
+                       (above), and there, Angular takes responsibility for
+                       us and unsubscribes for us and hence we don't have
+                       any ongoing old subscription here."
+                       */
                       return this.myStore.select(fromRoot.getRecipeState);
                   }
               ),
@@ -117,19 +135,25 @@ export class RecipeDetailComponent implements OnInit {
 
   myOnDeleteRecipe() {
 
+/* No Longer Using (now NgRx)
     this.myRecipeService.deleteRecipe(this.id);
-    this.router.navigate(['recipes'])
-        .then(
-            (resolvedWeGot) => {
-              console.log('OnDeleteRecipe, navigation worked. resolvedWeGot ', resolvedWeGot);
-            },
-            (rejectedOrErrorWeGot) => {
-              console.log('OnDeleteRecipe, navigation failed. rejectedOrErrorWeGot ', rejectedOrErrorWeGot);
-              /*
+*/
+
+      this.myStore.dispatch(new RecipeActions.DeleteRecipeActionClass(
+          {idToDelete: this.id}));
+
+      this.router.navigate(['/recipes']) // MAX has ['/recipes'] hmm
+          .then(
+              (resolvedWeGot) => {
+                  console.log('OnDeleteRecipe, navigation worked. resolvedWeGot ', resolvedWeGot);
+              },
+              (rejectedOrErrorWeGot) => {
+                  console.log('OnDeleteRecipe, navigation failed. rejectedOrErrorWeGot ', rejectedOrErrorWeGot);
+                  /*
               Error: Cannot match any routes. URL Segment: 'recipesfoobar' ...
                */
-            }
-        );
-  }
+              }
+          );
+  } // /myOnDeleteRecipe()
 
 }

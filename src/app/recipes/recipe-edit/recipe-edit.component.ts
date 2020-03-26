@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import {FormGroup, FormControl, Validators, FormArray, Form, AbstractControl} from '@angular/forms';
 import { RecipeService } from '../recipe.service';
 import {Recipe} from '../recipe.model';
+import { Subscription } from 'rxjs';
 import { tap, map } from 'rxjs/operators';
 
 import { Store } from '@ngrx/store';
@@ -15,10 +16,11 @@ import {compareNumbers} from '@angular/compiler-cli/src/diagnostics/typescript_v
   templateUrl: './recipe-edit.component.html',
   styleUrls: ['./recipe-edit.component.css'],
 })
-export class RecipeEditComponent implements OnInit {
+export class RecipeEditComponent implements OnInit, OnDestroy {
   id: number;
   editMode = false;
   myRecipeForm: FormGroup;
+  private myRecipesSubscription: Subscription;
 
   constructor(
       private route: ActivatedRoute,
@@ -109,7 +111,7 @@ export class RecipeEditComponent implements OnInit {
           );
 */
 
-    const recipeToSendToService = new Recipe(
+    const recipeToSendToStore = new Recipe( // WAS: 'recipeToSendToService' Now NgRx. cheers.
         this.myRecipeForm.value['name'],
         this.myRecipeForm.value['description'],
         this.myRecipeForm.value['imagePath'],
@@ -131,14 +133,16 @@ export class RecipeEditComponent implements OnInit {
           this.myRecipeService.updateRecipe(this.id, recipeToSendToService);
 */
 
-          this.myStore.dispatch(new RecipeActions.UpdateRecipeEffectActionClass({
+          this.myStore.dispatch(new RecipeActions.UpdateRecipeActionClass({
               idToUpdate: this.id,
-              recipeToUpdate: recipeToSendToService
+              recipeToUpdate: recipeToSendToStore
               })
           );
 
           this.editMode = false;
+/* MAX does *NOT* run "cancel". After edit/submit, his Recipe-Being-Edited is still shown
           this.myOnCancel(); // we are done!
+*/
       } else {
           // ADD NEW
 
@@ -146,10 +150,12 @@ export class RecipeEditComponent implements OnInit {
           this.myRecipeService.addRecipe(recipeToSendToService);
 */
 
-          this.myStore.dispatch(new RecipeActions.AddRecipeActionClass({ recipeToAdd: recipeToSendToService }));
+          this.myStore.dispatch(new RecipeActions.AddRecipeActionClass({ recipeToAdd: recipeToSendToStore }));
 
-          this.myOnCancel(); // we are done!
+          // this.myOnCancel(); // we are done!
       }
+
+      this.myOnCancel(); // we are done! (run for both UPDATE and ADD)
 
   } // /myOnSubmit()
 
@@ -168,7 +174,13 @@ export class RecipeEditComponent implements OnInit {
           const theRecipeToUpdate = this.myRecipeService.getRecipe(this.id);
 */
 
-          this.myStore.select(fromRoot.getRecipeState)
+/*
+Lect. 382 ~12:29  Assign the observable obtained from the Store
+                  to a Subscription. (and OnDestroy(unsubscribe()) too)
+(cf. RecipeDetailComponent where the Subscription is automatic, by Angular. Cheers.
+*/
+          this.myRecipesSubscription = this.myStore.select(fromRoot.getRecipeState)
+          // this.myStore.select(fromRoot.getRecipeState)
               .pipe(
                   map(
                       (stateRecipePartWeGot) => {
@@ -243,8 +255,33 @@ export class RecipeEditComponent implements OnInit {
   } // /wrInitForm()
 
     myOnCancel() {
-        this.myRecipeForm.reset();
+/* MAX Code does NOT do this:
+        this.myRecipeForm.reset(); // << nope
+*/
+/* WR__ This navigate() seems not right
+Yeah, this wasn't right.
+Better below MAX code
+
+WRONG:
+http://0.0.0.0:4200/recipes/1/edit << FROM
+http://0.0.0.0:4200/recipes        << TO << NOPE
+*/
+/* No
         this.router.navigate(['']).then(() => {}); // empty Promise .then()
+
+        I first (sorta) thought this line was equivalent to Max's below. Nope!
+*/
+
+        /* MAX Code has: */
+        this.router.navigate(['../'], { relativeTo: this.route }).then(() => {});
+        // empty Promise .then()
+        // fwiw: this.route: ActivatedRoute
+/*
+RIGHT:
+http://0.0.0.0:4200/recipes/1/edit << FROM
+http://0.0.0.0:4200/recipes/1      << TO << YEP
+*/
+
     }
 
     myOnAddIngredient() {
@@ -280,4 +317,13 @@ export class RecipeEditComponent implements OnInit {
         }
     }
 
+    ngOnDestroy(): void {
+      /*
+      Don't forget to test with if () for *existence* of Subscription!
+      If I just do NEW RECIPE I never enter "editMode" and never create Subscription. Cheers.
+       */
+      if (this.myRecipesSubscription) {
+          this.myRecipesSubscription.unsubscribe();
+      }
+    }
 }

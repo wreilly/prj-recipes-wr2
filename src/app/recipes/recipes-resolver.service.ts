@@ -27,8 +27,9 @@ export class RecipesResolverService implements Resolve<Recipe[]> { // MAX CODE/A
 
 /* */
     // private something$: Observable<A>; // testing around. not used.
+
     // tslint:disable-next-line:max-line-length
-    myResolveTestDispatchOnlyTemp(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Recipe[]> | Promise<Recipe[]> | Recipe[] {
+    myResolveTestDispatchOnlyTemp(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Recipe[]> | Promise<Recipe[]> | Recipe[] { // 03
         console.log('Recipes Resolver, people! route: ActivatedRouteSnapshot y not ', route);
         console.log('Recipes Resolver, people! state: RouterStateSnapshot y not ', state);
 
@@ -59,10 +60,14 @@ export class RecipesResolverService implements Resolve<Recipe[]> { // MAX CODE/A
 */
     } // /myResolveTestDispatchOnlyTemp() {} // 03 with NO this.actions$.pipe(ofType(SET_RECIPES))
 
-    resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Recipe[]> | Promise<Recipe[]> | Recipe[] {
-/*
-    myPart10ResolveWorks(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Recipe[]> | Promise<Recipe[]> | Recipe[] {
+
+    /* THE BIG CHANGE OCCURS, from my '02' here to my '01' (below): LECT. 382 ~10:08 ... */
+    /*
+    resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Recipe[]> | Promise<Recipe[]> | Recipe[] { // 02
 */
+    // tslint:disable-next-line:max-line-length
+    myPart10ResolveWorks(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Recipe[]> | Promise<Recipe[]> | Recipe[] { // 02
+
         console.log('Recipes Resolver, people! route: ActivatedRouteSnapshot y not ', route);
         console.log('Recipes Resolver, people! state: RouterStateSnapshot y not ', state);
 
@@ -134,13 +139,14 @@ export class RecipesResolverService implements Resolve<Recipe[]> { // MAX CODE/A
         // /.pipe()
     } // /myPart10ResolveWorks() {} // 02
 
-/*    resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Recipe[]> | Promise<Recipe[]> | Recipe[] {
-// Not Yet Ready - it's okay. This "resolve()" is for ngrx-12-final
- */
 
-/* */
+    /* THE BIG CHANGE OCCURS from my '02' to here this my '01': LECT. 382 ~10:08 ... */
+    resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Recipe[]> | Promise<Recipe[]> | Recipe[] {
+// NOW READY :o) ... Not Yet Ready - it's okay. This "resolve()" is for ngrx-12-final
+/*
     myFullResolveTemp(route: ActivatedRouteSnapshot, state: RouterStateSnapshot):
     Observable<Recipe[]> | Promise<Recipe[]> | Recipe[] { // 01
+*/
 
         /*
         Very nice - Resolver can return:
@@ -166,9 +172,9 @@ NgRx:
         ALSO:  /recipes/2/edit   ALSO: /recipes/new
          */
 
-        return this.myStore.select(fromRoot.getRecipeState)
+        return this.myStore.select(fromRoot.getRecipeState) // << Don't forget 'return' !!!
             .pipe(
-                take(1),
+                take(1), // << ensure don't do multiple times. bueno.
                 map(
                     (stateRecipePartWeGot: StateRecipePart) => {
                         console.log('01 people! stateRecipePartWeGot.recipes ', stateRecipePartWeGot.recipes);
@@ -203,7 +209,7 @@ NgRx:
                             return this.myRecipesEffectsActions$.pipe(
                                 ofType(RecipesActions.SET_RECIPES_EFFECT_ACTION),
                                 // when recipes are set,
-                                take(1),
+                                take(1), // << ensure don't do multiple times. bueno.
                                 // MAX does NOT have this additional "map()" I have below ... hmm
                                 /* ??? ???
                                 map(

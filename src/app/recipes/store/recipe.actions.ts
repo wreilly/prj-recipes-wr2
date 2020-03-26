@@ -2,33 +2,44 @@ import {Action} from '@ngrx/store';
 import {Recipe} from '../recipe.model';
 
 export const ADD_RECIPE_ACTION = '[Recipes] Add Recipe';
-export const UPDATE_RECIPE_EFFECT_ACTION = '[Recipes] Update Recipe'; // << ? Effect ?
+export const UPDATE_RECIPE_ACTION = '[Recipes] Update Recipe'; // << Effect ? NO.
+export const DELETE_RECIPE_ACTION = '[Recipes] Delete Recipe'; // << Effect ? NO.
+
 export const FETCH_RECIPES_EFFECT_ACTION = '[Recipes] Fetch Recipes';
-export const SET_RECIPES_EFFECT_ACTION = '[Recipes] Set Recipes';
+export const SET_RECIPES_EFFECT_ACTION = '[Recipes] Set Recipes'; // << Effect ? Hmm. Don't think so (?)
 // TODO Rename (I think) to remove "_EFFECT_" from SET_RECIPES etc. t.b.d.
+
 
 export class AddRecipeActionClass implements Action {
     readonly type = ADD_RECIPE_ACTION;
     constructor(
-        myPayload: {
+        public myPayload: {
             recipeToAdd: Recipe,
+        }
+    ) { }
+}
+
+export class UpdateRecipeActionClass implements Action {
+    readonly type = UPDATE_RECIPE_ACTION;
+    constructor(
+        public myPayload: {
+            idToUpdate: number,
+            recipeToUpdate: Recipe,
+        }
+    ) { }
+}
+
+export class DeleteRecipeActionClass implements Action {
+    readonly type = DELETE_RECIPE_ACTION;
+    constructor(
+        public myPayload: {
+            idToDelete: number,
         }
     ) { }
 }
 
 export class FetchRecipesEffectActionClass implements Action {
     readonly type = FETCH_RECIPES_EFFECT_ACTION;
-}
-
-export class UpdateRecipeEffectActionClass implements Action {
-    readonly type = UPDATE_RECIPE_EFFECT_ACTION;
-
-    constructor(
-        myPayload: {
-            idToUpdate: number,
-            recipeToUpdate: Recipe,
-        }
-    ) { }
 }
 
 export class SetRecipesEffectActionClass implements Action {
@@ -39,6 +50,7 @@ export class SetRecipesEffectActionClass implements Action {
 }
 
 export type RecipesActionsUnionType = AddRecipeActionClass
+    | UpdateRecipeActionClass
+    | DeleteRecipeActionClass
     | FetchRecipesEffectActionClass
-    | UpdateRecipeEffectActionClass
     | SetRecipesEffectActionClass;
