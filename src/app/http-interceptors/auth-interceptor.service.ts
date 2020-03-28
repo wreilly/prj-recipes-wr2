@@ -279,7 +279,50 @@ isTrusted: true
         /*  *****    REQUEST    *********
          */
         console.log('AUTH-INTERCEPT req.headers ', req.headers);
-        console.log('AUTH-INTERCEPT JSON.stringify(req) ', JSON.stringify(req));
+        console.log('AUTH-INTERCEPT JSON.stringify(req) ', JSON.stringify(req)); // WORKED WR__ but not MAX. Hmmph.
+        // Update, hmm, now above DOES work okay, even w. MAX-ish code. Sheesh(-ish). Cwazy tymes.
+
+        /*
+        WR__. WORKED. AUTH-INTERCEPT JSON.stringify(req)
+        ===========
+{
+	"url":"https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json",
+	"body":
+		[
+		{"description":"A 99 103 s...","name":"Basic 99 103 22 choppa Class ngrx started up edit still works"},
+		{"description":"W-a-a-a-l, 7777 it looks p","name":"Let new 7777 navigate UsEdit23 Coffee FOR DUKE Cake EDITTIME Max08 Edit the 2nd 3rd"},
+		],
+			"reportProgress":false,
+	"withCredentials":false,
+	"responseType":"json",
+	"method":"PUT",
+	"headers":{"normalizedNames":{},"lazyUpdate":null,"headers":{}},
+	"params":{"updates":null,"cloneFrom":null,"encoder":{},"map":null},
+	"urlWithParams":"https://wr-ng8-prj-recipes-wr2.firebaseio.com/recipes.json"
+}
+============
+         */
+
+        /* My attempt at MAX approach (still hits error - sheesh)
+        console.log('AUTH-INTERCEPT req (below): ');
+        console.log(req); // << hits same JSON.stringify circular-berkular error-ker-snippety-snap
+
+        Holy Kerpow:
+          at HttpRequest.push../node_modules/@angular/common/fesm5/http.js.HttpRequest.serializeBody (http.js:687)
+                  // Check whether the body is an object or array, and serialize with JSON if so.
+        if (typeof this.body === 'object' || typeof this.body === 'boolean' ||
+            Array.isArray(this.body)) {
+            return JSON.stringify(this.body);
+        }
+        // Fall back on toString() for everything else.
+        return this.body.toString();
+         */
+        /*
+        Hey! Learn sumtin' new Every Day:
+        https://stackoverflow.com/questions/27101240/typeerror-converting-circular-structure-to-json-in-nodejs
+        "The request (req) object is circular by nature - Node does that."
+         */
+
         /*
         {
         "url":"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?

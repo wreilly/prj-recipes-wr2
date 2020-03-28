@@ -8,8 +8,31 @@ export interface StateRecipePart {
 }
 
 const initialStateRecipePart = {
-    recipes: [],
+    recipes: [
+        /*
+        Here is a BACK-UP of the basic 6 test recipes ... ! (whew!)
+        If/when I lose/override/o-well my data on Firebase (hah! can happen!)
+        then you can come in here, UNCOMMENT, restart app, and
+        do "Send Data" to put this BACK to Firebase. cheers.
+        (o la)
+         */
+/*
+        {"description":"A 99 103 super-tasty Schnitzel - just awesome!","imagePath":"https://upload.wikimedia.org/wikipedia/commons/7/72/Schnitzel.JPG","ingredients":[{"name":"Meat","amount":1},{"name":"French Fries","amount":20},{"name":"crackers","amount":665},{"name":"still works","amount":33},{"name":"ketchup","amount":2},{"name":"chops","amount":3}],"name":"Basic 99 103 22 choppa Class ngrx started up edit still works"},
+        {"description":"W-a-a-a-l, 7777 it looks purty good. indeed","imagePath":"https://bakeorbreak.com/wp-content/uploads/2012/03/cccofcake1kR3.jpg","ingredients":[{"amount":2,"name":"coffee"},{"amount":2,"name":"cake"},{"amount":658,"name":"let us edit some22"},{"amount":4,"name":"ketchup"}],"name":"Let new 7777 navigate UsEdit23 Coffee FOR DUKE Cake EDITTIME Max08 Edit the 2nd 3rd"},
+        {"description":"T'ain't none!","imagePath":"https://drdavinahseats.com/wp-content/uploads/2019/06/Keto-Surf-Turf-1800_2700-Pinterest-Image-November-scaled.png","ingredients":[{"amount":4,"name":"keto"}],"name":"Surf. 99 Make it CHANGE. Turf. No Ingredients You Say NO WAY!"},
+        {"description":"No one is not even not here or anything unlike that whatsoever at all!","imagePath":"https://bmexdi064h-flywheel.netdna-ssl.com/wp-content/uploads/2019/05/Grilled-Asparagus-foodiecrush.com-008.jpg","name":"Asparagus Duke the CatDog was here. Bark! Nary a One EDITED","ingredients":[]},
+        {"description":"test","imagePath":"https://image.shutterstock.com/z/stock-photo-pancakes-with-berries-and-maple-syrup-365501507.jpg","name":"Does new work?","ingredients":[]},
+        {'description': 'Can\'t use this picture in public, kids!',
+            'imagePath': 'https://image.shutterstock.com/z/stock-photo-pancakes-with-berries-and-maple-syrup-365501507.jpg',
+            'ingredients': [{'amount': 4, 'name': 'Berry, Straw'},
+                {'amount': 10, 'name': 'Berry, Blue'},
+                {'amount': 1, 'name': 'Syrup'},
+                {'amount': 19, 'name': 'Butter'}],
+            'name': 'Puncakes that NECESSARY Likes'},
+*/
+    ]
 };
+
 
 export function recipeReducer (
     ngrxState: StateRecipePart = initialStateRecipePart,
@@ -18,7 +41,8 @@ export function recipeReducer (
 
     switch (ngrxAction.type) {
         /*
-        N.B. No "Fetch" here in Reducer. See Effects.
+        N.B. No "Fetch" Recipes here in Reducer. See Effects.
+        Likewise no "Store" Recipes here in Reducer - see Effects.
          */
         case fromRecipeActions.ADD_RECIPE_ACTION:
             console.log('ADD_RECIPE_ACTION woot ngrxAction.myPayload.recipeToAdd ', ngrxAction.myPayload.recipeToAdd);

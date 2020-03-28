@@ -185,7 +185,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
   */
 
   sendData() {
+
+/* No Longer Using (now NgRx)
     this.myDataStorageService.storeRecipes(); // fire & forget
+*/
+
+      this.myStore.dispatch(new RecipesActions.StoreRecipesEffectActionClass());
+      // Appears even w. NgRx it's kinda "fire & forget" here in the invoking Component. Hmm.
+
     // Update: storeRecipes() on Service has no 'return' in MAX Code. Hmm.
     /* N.B. storeRecipes() "returns" a Subscription, but the called method does
     its own .subscribe() over in that Service,
