@@ -77,19 +77,63 @@ export class HeaderComponent implements OnInit, OnDestroy {
 /* Hmm, not a Subscription ... ?
     this.myAuthUserSub = this.myStore.select(fromRoot.getIsAuthenticatedInStore)
 */
+      this.myAuthUserSub = this.myStore.select(fromRoot.getAuthState)
+          /* WORKED
+Here below, we used to use State/Store to just get "is authenticated".
+We were NOT using State to get whole "User" (and thus the User's e-mail, to display on the header).
+To do that, note that, if say you want to get the User.email to display on the header,
+you must TEST ("if()") you HAVE a User yet. see below.
+
     this.myAuthUserSub = this.myStore.select(fromRoot.getIsAuthenticatedInStore)
+*/
         .pipe(
             tap(
                 (whatWeGotTapping) => {
-                  console.log('whatWeGotTapping boolean be: ', whatWeGotTapping); // e.g. true
-                  this.isAuthenticated = whatWeGotTapping;
+                    // WORKED console.log('whatWeGotTapping boolean be: ', whatWeGotTapping); // e.g. true
+                    console.log('whatWeGotTapping StateAuthPart be: ', whatWeGotTapping);
+                    /*
+                    INITIAL (not logged in yet): = GOOD
+                    {myAuthedUser: null, myAuthError: null, myIsLoading: false}
+                    UPON LOGIN = GOOD
+                    {myAuthedUser: User, myAuthError: null, myIsLoading: false}
+                     */
+
+                    // WORKED this.isAuthenticated = whatWeGotTapping;
+                    this.isAuthenticated = !!whatWeGotTapping.myAuthedUser;
+                    // '!!' double-bangs, makes it a boolean
                 }
             )
         )
         .subscribe(
             (whatWeGotSubscribing) => {
-              console.log('whatWeGotSubscribing boolean be: ', whatWeGotSubscribing);
-              this.isAuthenticated = whatWeGotSubscribing;
+                // console.log('whatWeGotSubscribing boolean be: ', whatWeGotSubscribing);
+                console.log('whatWeGotSubscribing StateAuthPart be: ', whatWeGotSubscribing);
+                /*
+INITIAL (not logged in yet): = GOOD
+{myAuthedUser: null, myAuthError: null, myIsLoading: false}
+UPON LOGIN = GOOD
+{myAuthedUser: User, myAuthError: null, myIsLoading: false}
+ */
+              this.isAuthenticated = !!whatWeGotSubscribing.myAuthedUser;
+
+                /* LOGGING SVC */
+                this.myLoggingService
+                    .printLog(`NGRX - HeaderComponent says ${JSON
+                        .stringify(whatWeGotSubscribing.myAuthedUser)} regarding isAuthenticated.`);
+                /* yep:
+                {
+"email":"wednesday@week.com",
+"id":"hLzaGHeZUzPG8Stsp1YyGYFGU4z1",
+"_token":"eyJhbGci...m8jzw",
+"_tokenExpirationDate":"2020-03-31T13:27:03.752Z"
+}
+                {"email":"necessary@cat.edu","id":"hMv51L1tHof1paEgJe9ZEjUVhH82","_token":" ...
+                */
+
+                // HOLD OFF! << Here is where you must TEST ("if()") for User. Cheers.
+                if (this.isAuthenticated) {
+                    this.userEmailToDisplay = whatWeGotSubscribing.myAuthedUser.email;
+                }
             }
         );
 
